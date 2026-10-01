@@ -120,12 +120,15 @@ export interface CurrencyConfig {
   locale: string;
 }
 
-/** Which reason group each movement type uses. */
+/**
+ * Which reason group each movement type uses. Repayments have no reason:
+ * the "why" belongs to the loan being repaid. Transfers and adjustments
+ * don't have one either.
+ */
 export const REASON_GROUP_BY_TYPE: Partial<Record<MovementType, ReasonGroup>> = {
   income: "income",
   expense: "expense",
   lend: "loan",
-  repayment: "loan",
   settlement: "loan",
   borrow: "loan",
 };

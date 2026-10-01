@@ -185,7 +185,6 @@ export function generateSampleMovements(opts: {
           date: at(16),
           accountId: wallet.id,
           personId: p.id,
-          reasonId: loanReason(),
           note: "",
         });
       } else if (balance > 0 && kind < 0.55) {
@@ -206,7 +205,6 @@ export function generateSampleMovements(opts: {
           date: at(17),
           accountId: main.id,
           personId: p.id,
-          reasonId: reason("loan", "Emergencia"),
           note: "",
         });
       } else if (kind < 0.9) {

@@ -61,6 +61,15 @@ describe("validateMovement", () => {
     ).toEqual(["reasonWrongGroup"]);
   });
 
+  it("repayments need no reason", () => {
+    expect(
+      validateMovement(
+        draft({ type: "repayment", accountId: "nu", personId: "dad", direction: "in" }),
+        reasons,
+      ),
+    ).toEqual([]);
+  });
+
   it("settlement needs a person and direction but no account", () => {
     expect(
       validateMovement(

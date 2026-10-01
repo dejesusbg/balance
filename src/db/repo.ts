@@ -2,7 +2,15 @@
 // the previous state of the rows it touched, so "Deshacer" can put them back.
 
 import { accountBalanceAt, adjustmentDelta } from "@/domain/ledger";
-import type { Account, Amount, ID, Movement, Person, Settings } from "@/domain/types";
+import {
+  REASON_GROUP_BY_TYPE,
+  type Account,
+  type Amount,
+  type ID,
+  type Movement,
+  type Person,
+  type Settings,
+} from "@/domain/types";
 import {
   validateMovement,
   type MovementDraft,
@@ -259,7 +267,7 @@ function clean(d: MovementDraft): MovementDraft {
     out.direction = d.direction;
     if (d.priorDebt) out.priorDebt = true;
   }
-  if (d.reasonId && d.type !== "transfer" && d.type !== "adjustment") out.reasonId = d.reasonId;
+  if (d.reasonId && REASON_GROUP_BY_TYPE[d.type]) out.reasonId = d.reasonId;
   if (d.type === "adjustment" && d.targetBalance !== undefined) out.targetBalance = d.targetBalance;
   return out;
 }

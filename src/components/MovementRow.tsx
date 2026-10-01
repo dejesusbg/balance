@@ -52,7 +52,7 @@ export function describeMovement(m: Movement, data: AppData) {
       break;
     case "repayment":
     case "settlement":
-      title = reason ?? t.movementType[m.type];
+      title = m.type === "repayment" ? t.movementType.repayment : (reason ?? t.movementType[m.type]);
       context = [
         `${t.direction[m.type][m.direction ?? "in"]} · ${person ?? ""}`,
         m.priorDebt ? t.movements.priorDebt : undefined,

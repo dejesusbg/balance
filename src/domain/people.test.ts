@@ -63,11 +63,11 @@ describe("personSummary", () => {
     expect(s).toMatchObject({ balance: 0, paidMe: 0, priorIn: 30_000, priorOut: 4_000, byReason: [] });
   });
 
-  it("breaks the balance down by reason", () => {
+  it("breaks loans and in-kind settlements down by reason, ignoring repayments", () => {
     const s = personSummary(dad, movements);
     expect(s.byReason).toEqual([
-      { reasonId: "lunch", up: 50_000, down: 42_000 },
-      { reasonId: "emergency", up: 25_000, down: 5_000 },
+      { reasonId: "lunch", up: 50_000, down: 12_000 },
+      { reasonId: "emergency", up: 20_000, down: 5_000 },
       { reasonId: undefined, up: 1_000, down: 0 },
     ]);
   });

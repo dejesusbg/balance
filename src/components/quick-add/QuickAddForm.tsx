@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { deleteMovement, saveMovement, undo, ValidationFailed, type MovementInput } from "@/db/repo";
 import { accountBalanceAt, previewPersonBalance } from "@/domain/ledger";
 import { rankReasons } from "@/domain/query";
-import type { Direction, ID, MovementType } from "@/domain/types";
+import { REASON_GROUP_BY_TYPE, type Direction, type ID, type MovementType } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
@@ -334,7 +334,7 @@ export function QuickAddForm({
           </label>
         )}
 
-        {s.type !== "transfer" && !isAdjustment && (
+        {REASON_GROUP_BY_TYPE[s.type] && (
           <Field label={t.quickAdd.reason}>
             {reasons.length ? (
               <ChipGroup

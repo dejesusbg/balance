@@ -21,7 +21,7 @@ export interface PersonSummary {
   /** Payments/settlements of debts from before the app (balance unchanged). */
   priorIn: Amount;
   priorOut: Amount;
-  /** Per reason: how much it raised and lowered the balance. */
+  /** Per reason (loans and in-kind settlements): how much it raised and lowered the balance. */
   byReason: { reasonId: ID | undefined; up: Amount; down: Amount }[];
 }
 
@@ -61,6 +61,8 @@ export function personSummary(person: Person, movements: Movement[]): PersonSumm
       else s.kindIn += a;
     }
 
+    // The "why" lives on loans and in-kind settlements, not on repayments.
+    if (m.type === "repayment") continue;
     const r = reasons.get(m.reasonId) ?? { up: 0, down: 0 };
     if (eff.delta > 0) r.up += eff.delta;
     else r.down -= eff.delta;
