@@ -1,0 +1,107 @@
+// All UI strings live here. To add another language, copy this file
+// (e.g. en.ts) keeping the same shape, and switch it in i18n/index.ts.
+
+export const es = {
+  app: {
+    name: "Balance",
+    description: "¿A dónde se va mi plata? Registra cada movimiento.",
+  },
+  nav: {
+    home: "Inicio",
+    movements: "Movimientos",
+    people: "Personas",
+    reports: "Reportes",
+    settings: "Ajustes",
+  },
+  movementType: {
+    income: "Ingreso",
+    expense: "Gasto",
+    transfer: "Transferencia",
+    lend: "Préstamo",
+    repayment: "Pago de deuda",
+    settlement: "Compensación en especie",
+    borrow: "Me prestaron",
+    adjustment: "Ajuste",
+  },
+  direction: {
+    repayment: { in: "Me pagaron", out: "Yo pagué" },
+    settlement: {
+      in: "Me dio algo (reduce lo que me debe)",
+      out: "Le di algo (reduce lo que le debo)",
+    },
+  },
+  reasonGroup: {
+    income: "Ingresos",
+    expense: "Gastos",
+    loan: "Préstamos",
+  },
+  home: {
+    totalNow: "Dinero disponible",
+    owedToMe: "Me deben",
+    iOwe: "Debo",
+    accounts: "Cuentas",
+    latest: "Últimos movimientos",
+    empty: "Aún no hay movimientos.",
+  },
+  settings: {
+    title: "Ajustes",
+    data: "Datos",
+    loadSample: "Cargar datos de ejemplo",
+    loadSampleHint:
+      "Agrega ~6 meses de movimientos ficticios para probar la app. Reemplaza los movimientos actuales.",
+    loadSampleConfirm:
+      "Esto reemplaza todos tus movimientos por datos de ejemplo. ¿Continuar?",
+    resetAll: "Borrar todo",
+    resetAllConfirm:
+      "Se borrarán todas las cuentas, personas, motivos y movimientos. No se puede deshacer. ¿Continuar?",
+    done: "Listo",
+  },
+  common: {
+    soon: "Disponible en un próximo hito.",
+    loading: "Cargando…",
+    cancel: "Cancelar",
+    confirm: "Confirmar",
+    undo: "Deshacer",
+  },
+  errors: {
+    amountRequired: "Escribe un monto.",
+    accountRequired: "Elige una cuenta.",
+    toAccountRequired: "Elige la cuenta destino.",
+    sameAccount: "Las cuentas de origen y destino deben ser distintas.",
+    personRequired: "Elige una persona.",
+    reasonRequired: "Elige un motivo.",
+    reasonWrongGroup: "Ese motivo no aplica a este tipo de movimiento.",
+    directionRequired: "Indica la dirección.",
+    unexpectedAccount: "Este movimiento no usa cuentas.",
+  },
+  seed: {
+    accounts: ["Nu", "Nequi", "Efectivo"],
+    people: ["Mamá", "Papá", "Hermano"],
+    reasons: {
+      income: [
+        { name: "Tarea/Trabajo", countsForTithing: true },
+        { name: "Regalo", countsForTithing: true },
+        { name: "Reembolso", countsForTithing: false },
+        { name: "Otro", countsForTithing: true },
+      ],
+      expense: [
+        { name: "Compra deseada", essential: false },
+        { name: "Suscripción", essential: false },
+        { name: "Regalo", essential: false },
+        { name: "Diezmo", essential: false, role: "tithing" },
+        { name: "Comida", essential: true },
+        { name: "Transporte", essential: true },
+        { name: "Comisión bancaria", essential: false, role: "fee" },
+        { name: "Otro", essential: false },
+      ],
+      loan: [
+        { name: "Almuerzo/comida" },
+        { name: "Compra de regalo" },
+        { name: "Emergencia" },
+        { name: "Otro" },
+      ],
+    },
+  },
+} as const;
+
+export type Strings = typeof es;

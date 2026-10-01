@@ -1,0 +1,81 @@
+/*
+ * Design tokens. PROVISIONAL: neutral placeholders until the Claude Design
+ * System is imported. Components must only use these variables, so swapping
+ * the values here restyles the whole app.
+ */
+:root {
+  /* Color */
+  --color-bg: #ffffff;
+  --color-surface: #f4f4f5;
+  --color-surface-raised: #ffffff;
+  --color-border: #e4e4e7;
+  --color-text: #18181b;
+  --color-text-muted: #71717a;
+  --color-primary: #18181b;
+  --color-on-primary: #ffffff;
+  --color-positive: #15803d;
+  --color-negative: #b91c1c;
+  --color-warning: #a16207;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-numeric: var(--font-sans);
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Shape & elevation */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+  --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.12);
+
+  /* Layout */
+  --nav-height: 64px;
+  --tap-min: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #09090b;
+    --color-surface: #18181b;
+    --color-surface-raised: #27272a;
+    --color-border: #3f3f46;
+    --color-text: #fafafa;
+    --color-text-muted: #a1a1aa;
+    --color-primary: #fafafa;
+    --color-on-primary: #09090b;
+    --color-positive: #4ade80;
+    --color-negative: #f87171;
+    --color-warning: #facc15;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #09090b;
+  --color-surface: #18181b;
+  --color-surface-raised: #27272a;
+  --color-border: #3f3f46;
+  --color-text: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-primary: #fafafa;
+  --color-on-primary: #09090b;
+  --color-positive: #4ade80;
+  --color-negative: #f87171;
+  --color-warning: #facc15;
+}
