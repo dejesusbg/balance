@@ -13,7 +13,8 @@ import {
   type EntryKind,
   type PaymentMethod,
 } from "@/domain/entry";
-import { REASON_GROUP_BY_TYPE, type Direction, type ID } from "@/domain/types";
+import { tithingRules, tithingSuggestion } from "@/domain/tithing";
+import { REASON_GROUP_BY_TYPE, type Direction, type ID, type Movement } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
@@ -42,6 +43,9 @@ interface FormState {
 }
 
 export type QuickAddPreset = Partial<FormState>;
+
+/** Read at save time (event handlers), never during render. */
+const currentTime = () => Date.now();
 
 /** Default direction when switching to a category. */
 const defaultDirection = (kind: EntryKind): Direction => (kind === "loan" ? "out" : "in");
@@ -176,7 +180,7 @@ export function QuickAddForm({
   }, [isAdjustment, s.accountId, s.amount, s.date, data, editId, openedAt]);
 
   async function save() {
-    const date = s.date ?? Date.now();
+    const date = s.date ?? currentTime();
     const input: MovementInput = {
       ...shape,
       amount: isAdjustment ? (adjustment?.delta ?? 0) : s.amount,
@@ -194,7 +198,29 @@ export function QuickAddForm({
     try {
       const res = await saveMovement(input, editId);
       onDone();
-      toast(editId ? t.quickAdd.updated : t.quickAdd.saved, { onUndo: () => undo(res.undo) });
+      const tithe = editId ? 0 : suggestTithe({ ...input, id: res.id, createdAt: date, updatedAt: date });
+      if (tithe > 0) {
+        // One tap to set aside the tithe from the same account, or ignore it.
+        toast(`${t.quickAdd.saved}. ${t.tithing.prompt(data.fmt(tithe, { reveal: true }))}`, {
+          onUndo: () => undo(res.undo),
+          action: {
+            label: t.tithing.promptAction,
+            run: async () => {
+              const r = await saveMovement({
+                type: "expense",
+                amount: tithe,
+                date: currentTime(),
+                accountId: input.accountId,
+                reasonId: tithingRules(data.reasons, data.settings.tithingRate).tithingReasonId,
+                note: "",
+              });
+              toast(t.tithing.recorded, { onUndo: () => undo(r.undo) });
+            },
+          },
+        });
+      } else {
+        toast(editId ? t.quickAdd.updated : t.quickAdd.saved, { onUndo: () => undo(res.undo) });
+      }
     } catch (e) {
       if (e instanceof ValidationFailed) {
         const first = e.errors[0];
@@ -205,6 +231,12 @@ export function QuickAddForm({
     } finally {
       setBusy(false);
     }
+  }
+
+  function suggestTithe(saved: Movement): number {
+    if (saved.type !== "income") return 0;
+    const rules = tithingRules(data.reasons, data.settings.tithingRate);
+    return tithingSuggestion(saved, [...data.movements, saved], rules);
   }
 
   async function remove() {

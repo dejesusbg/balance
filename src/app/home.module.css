@@ -50,6 +50,37 @@
   font: var(--fw-semibold) var(--fs-body-lg) / var(--lh-body-lg) var(--font-sans);
 }
 
+/* Grey tile row (design system TileButton) */
+.tithing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  margin: var(--space-16) var(--screen-gutter) 0;
+  min-height: 56px;
+  padding: 0 var(--space-20);
+  border-radius: var(--radius-lg);
+  background: var(--fill-neutral);
+  color: var(--text-primary);
+  text-decoration: none;
+  font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
+}
+
+.tithing:active {
+  background: var(--fill-neutral-pressed);
+}
+
+.tithing span {
+  flex: 1;
+}
+
+.tithing strong {
+  font-weight: var(--fw-semibold);
+}
+
+.tithing svg:last-child {
+  color: var(--text-secondary);
+}
+
 .section {
   padding: var(--space-24) 0 var(--space-8);
   border-bottom: var(--border-card) solid var(--divider);

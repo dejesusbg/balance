@@ -20,6 +20,8 @@ interface ConfirmOptions {
 interface ToastOptions {
   /** Shows a "Deshacer" action. */
   onUndo?: () => void | Promise<void>;
+  /** A primary one-tap action (e.g. record the tithe now). Stays up longer. */
+  action?: { label: string; run: () => void | Promise<void> };
 }
 
 interface FeedbackApi {
@@ -36,6 +38,7 @@ export const useFeedback = () => {
 };
 
 const TOAST_MS = 6000;
+const ACTION_TOAST_MS = 12000;
 
 /** App-wide confirm dialog and toast (with undo). */
 export function FeedbackProvider({ children }: { children: ReactNode }) {
@@ -66,7 +69,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), TOAST_MS);
+    const timer = setTimeout(() => setToast(null), toast.opts.action ? ACTION_TOAST_MS : TOAST_MS);
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -112,6 +115,18 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         {toast && (
           <div key={toast.id} className={styles.toast}>
             <span>{toast.message}</span>
+            {toast.opts.action && (
+              <button
+                type="button"
+                className={styles.action}
+                onClick={async () => {
+                  setToast(null);
+                  await toast.opts.action?.run();
+                }}
+              >
+                {toast.opts.action.label}
+              </button>
+            )}
             {toast.opts.onUndo && (
               <button
                 type="button"

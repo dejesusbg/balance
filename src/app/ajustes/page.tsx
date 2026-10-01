@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Database, Tags, Trash2, Users, Wallet } from "lucide-react";
+import { ChevronRight, Database, HandHeart, Tags, Trash2, Users, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useAppData } from "@/components/AppData";
 import { useFeedback } from "@/components/Feedback";
@@ -49,6 +49,15 @@ export default function SettingsPage() {
         <span className={styles.tileText}>
           <span className={styles.tileTitle}>{t.settings.reasons}</span>
           <span className={styles.tileSub}>{t.settings.reasonsHint}</span>
+        </span>
+        <ChevronRight size={22} strokeWidth={1.75} aria-hidden />
+      </Link>
+
+      <Link href="/diezmo" className={`${styles.tile} ${styles.tileGap}`}>
+        <HandHeart size={24} strokeWidth={1.75} aria-hidden />
+        <span className={styles.tileText}>
+          <span className={styles.tileTitle}>{t.settings.tithing}</span>
+          <span className={styles.tileSub}>{t.settings.tithingHint}</span>
         </span>
         <ChevronRight size={22} strokeWidth={1.75} aria-hidden />
       </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Eye, EyeOff, Wallet } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, HandHeart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useAppData } from "@/components/AppData";
 import { MovementRow } from "@/components/MovementRow";
@@ -8,6 +8,7 @@ import { useQuickAdd } from "@/components/quick-add/QuickAdd";
 import { IconButton } from "@/components/ui";
 import { updateSettings } from "@/db/repo";
 import { accountBalances, totals } from "@/domain/ledger";
+import { tithingRules, tithingSummary } from "@/domain/tithing";
 import { t } from "@/i18n";
 import styles from "./home.module.css";
 
@@ -22,6 +23,7 @@ export default function Home() {
   const sum = totals(accounts, people, movements);
   const balances = accountBalances(accounts, movements);
   const hidden = Boolean(settings.hideAmounts);
+  const tithing = tithingSummary(movements, tithingRules(data.reasons, settings.tithingRate));
 
   return (
     <>
@@ -48,6 +50,21 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {settings.tithingRate > 0 && (
+        <Link href="/diezmo" className={styles.tithing}>
+          <HandHeart size={22} strokeWidth={1.75} aria-hidden />
+          <span>{t.tithing.pending}</span>
+          <strong className="money">
+            {tithing.pending > 0
+              ? fmt(tithing.pending)
+              : tithing.pending < 0
+                ? `${t.tithing.advance} ${fmt(-tithing.pending)}`
+                : t.tithing.upToDate}
+          </strong>
+          <ChevronRight size={20} strokeWidth={1.75} aria-hidden />
+        </Link>
+      )}
 
       <section className={styles.section}>
         <Link href="/cuentas" className={styles.sectionHead}>
