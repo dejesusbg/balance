@@ -7,10 +7,12 @@ import {
   HandCoins,
   Handshake,
   HandHeart,
+  HeartHandshake,
   Scale,
   Undo2,
   type LucideIcon,
 } from "lucide-react";
+import { entryOf } from "@/domain/entry";
 import { flowOf } from "@/domain/query";
 import type { Movement, MovementType } from "@/domain/types";
 import { t } from "@/i18n";
@@ -18,7 +20,7 @@ import { formatTime } from "@/lib/dates";
 import type { AppData } from "./AppData";
 import styles from "./MovementRow.module.css";
 
-export const TYPE_ICON: Record<MovementType, LucideIcon> = {
+const TYPE_ICON: Record<MovementType, LucideIcon> = {
   income: ArrowDownLeft,
   expense: ArrowUpRight,
   transfer: ArrowLeftRight,
@@ -51,20 +53,25 @@ export function describeMovement(m: Movement, data: AppData) {
           : account;
       break;
     case "repayment":
-    case "settlement":
-      title = m.type === "repayment" ? t.movementType.repayment : (reason ?? t.movementType[m.type]);
+    case "settlement": {
+      // Old in-kind settlements may still carry a reason; it's ignored.
+      const { method, direction } = entryOf(m);
+      title = t.paymentTitle[method];
       context = [
-        `${t.direction[m.type][m.direction ?? "in"]} · ${person ?? ""}`,
+        `${t.paymentDirection[method][direction]} · ${person ?? ""}`,
         m.priorDebt ? t.movements.priorDebt : undefined,
         account,
       ]
         .filter(Boolean)
         .join(" · ");
       break;
+    }
     case "lend":
     case "borrow":
-      title = reason ?? t.movementType[m.type];
-      context = [`${t.movementType[m.type]} · ${person ?? ""}`, account].filter(Boolean).join(" · ");
+      title = reason ?? t.entryKind.loan;
+      context = [`${t.loanDirection[m.type === "lend" ? "out" : "in"]} · ${person ?? ""}`, account]
+        .filter(Boolean)
+        .join(" · ");
       break;
     default:
       title = reason ?? t.movementType[m.type];
@@ -97,7 +104,7 @@ export function MovementRow({
   /** Keep the sign but don't color as in/out (e.g. a person's balance). */
   neutralTone?: boolean;
 }) {
-  const Icon = TYPE_ICON[m.type];
+  const Icon = m.forgiven ? HeartHandshake : TYPE_ICON[m.type];
   const described = describeMovement(m, data);
   const { title, context } = described;
   const flow = delta === undefined ? described.flow : delta > 0 ? "in" : delta < 0 ? "out" : "neutral";

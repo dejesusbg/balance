@@ -194,8 +194,17 @@ export function generateSampleMovements(opts: {
           amount: Math.min(balance, between(12_000, 35_000)),
           date: at(13),
           personId: p.id,
-          reasonId: reason("loan", "Almuerzo/comida"),
           note: "Me invitó a almorzar",
+        });
+      } else if (balance > 0 && kind < 0.6) {
+        push({
+          type: "settlement",
+          direction: "in",
+          forgiven: true,
+          amount: Math.min(balance, between(5_000, 20_000)),
+          date: at(18),
+          personId: p.id,
+          note: "Se la perdoné",
         });
       } else if (balance < 0 && kind < 0.6) {
         push({

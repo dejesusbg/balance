@@ -3,10 +3,9 @@
 import {
   Archive,
   ArchiveRestore,
-  Gift,
   HandCoins,
   HandHeart,
-  Handshake,
+  HeartHandshake,
   Pencil,
   Undo2,
   Wallet,
@@ -22,7 +21,8 @@ import { Button, TopBar } from "@/components/ui";
 import { ActionCircle, ActionRow } from "@/components/ui/ActionCircle";
 import { Avatar } from "@/components/ui/Avatar";
 import { updatePerson } from "@/db/repo";
-import { personSummary, personTimeline } from "@/domain/people";
+import { personSummary, personTimeline, type ReasonDebt } from "@/domain/people";
+import type { QuickAddPreset } from "@/components/quick-add/QuickAddForm";
 import { t } from "@/i18n";
 import { formatShortDate } from "@/lib/dates";
 import styles from "./detalle.module.css";
@@ -61,14 +61,19 @@ function PersonDetail() {
   const stateText = (n: number) =>
     n === 0 ? t.people.state(0) : `${t.people.state(Math.sign(n))} ${data.fmt(Math.abs(n))}`;
 
-  const actions = [
-    { icon: HandCoins, label: t.people.actions.lend, type: "lend", brand: true },
-    { icon: Undo2, label: t.people.actions.paidMe, type: "repayment", direction: "in" },
-    { icon: Gift, label: t.people.actions.kindIn, type: "settlement", direction: "in" },
-    { icon: HandHeart, label: t.people.actions.borrow, type: "borrow" },
-    { icon: Wallet, label: t.people.actions.iPaid, type: "repayment", direction: "out" },
-    { icon: Handshake, label: t.people.actions.kindOut, type: "settlement", direction: "out" },
-  ] as const;
+  // En especie is picked inside the form ("¿Cómo se saldó?").
+  const actions: { icon: typeof HandCoins; label: string; preset: QuickAddPreset; brand?: boolean }[] = [
+    { icon: HandCoins, label: t.people.actions.lend, preset: { kind: "loan", direction: "out" }, brand: true },
+    { icon: HandHeart, label: t.people.actions.borrow, preset: { kind: "loan", direction: "in" } },
+    { icon: Undo2, label: t.people.actions.paidMe, preset: { kind: "payment", method: "money", direction: "in" } },
+    { icon: Wallet, label: t.people.actions.iPaid, preset: { kind: "payment", method: "money", direction: "out" } },
+    {
+      icon: HeartHandshake,
+      label: t.people.actions.forgive,
+      preset: { kind: "payment", method: "forgiven", direction: "in" },
+    },
+  ];
+  const lotById = new Map(summary.lots.map((l) => [l.movementId, l]));
 
   // Signed contributions, in the order money usually flows.
   const priorLines = [
@@ -84,7 +89,36 @@ function PersonDetail() {
     { label: t.people.summary.borrowed, value: -summary.borrowed },
     { label: t.people.summary.iPaid, value: summary.iPaid },
     { label: t.people.summary.kindOut, value: summary.kindOut },
+    { label: t.people.summary.forgivenIn, value: -summary.forgivenIn },
+    { label: t.people.summary.forgivenOut, value: summary.forgivenOut },
   ].filter((l) => l.value !== 0);
+
+  const reasonBlock = (title: string, list: ReasonDebt[]) =>
+    list.length > 0 && (
+      <section className={styles.section}>
+        <h2 className="section-title">{title}</h2>
+        <ul className={styles.reasons}>
+          {list.map((r) => {
+            const name = r.reasonId
+              ? (data.reasonById.get(r.reasonId)?.name ?? t.people.noReason)
+              : t.people.noReason;
+            const settled = r.amount - r.open;
+            const line = t.people.reasonLine(data.fmt(r.amount), r.open ? data.fmt(r.open) : null);
+            return (
+              <li key={r.reasonId ?? "none"}>
+                <div className={styles.reasonHead}>
+                  <span className={styles.reasonName}>{name}</span>
+                </div>
+                <div className={styles.bar} role="img" aria-label={line}>
+                  <span style={{ width: r.amount ? `${(settled / r.amount) * 100}%` : 0 }} />
+                </div>
+                <div className={styles.reasonSub}>{line}</div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    );
 
   async function toggleArchive() {
     if (!person) return;
@@ -122,14 +156,8 @@ function PersonDetail() {
                 key={a.label}
                 icon={a.icon}
                 label={a.label}
-                tone={"brand" in a ? "brand" : "neutral"}
-                onClick={() =>
-                  openNew({
-                    type: a.type,
-                    personId: person.id,
-                    ...("direction" in a ? { direction: a.direction } : {}),
-                  })
-                }
+                tone={a.brand ? "brand" : "neutral"}
+                onClick={() => openNew({ ...a.preset, personId: person.id })}
               />
             ))}
           </ActionRow>
@@ -167,55 +195,31 @@ function PersonDetail() {
         </section>
       )}
 
-      {summary.byReason.length > 0 && (
-        <section className={styles.section}>
-          <h2 className="section-title">{t.people.byReason}</h2>
-          <ul className={styles.reasons}>
-            {summary.byReason.map((r) => {
-              const name = r.reasonId
-                ? (data.reasonById.get(r.reasonId)?.name ?? t.people.noReason)
-                : t.people.noReason;
-              const big = Math.max(r.up, r.down);
-              const small = Math.min(r.up, r.down);
-              return (
-                <li key={r.reasonId ?? "none"} className={styles.reason}>
-                  <div className={styles.reasonHead}>
-                    <span className={styles.reasonName}>{name}</span>
-                    <span className="money">{data.fmt(r.up - r.down, { signed: true })}</span>
-                  </div>
-                  <div
-                    className={styles.bar}
-                    role="img"
-                    aria-label={`${t.people.up} ${data.fmt(r.up)}, ${t.people.down} ${data.fmt(r.down)}`}
-                  >
-                    <span style={{ width: big ? `${(small / big) * 100}%` : 0 }} />
-                  </div>
-                  <div className={styles.reasonSub}>
-                    {t.people.up} <span className="money">{data.fmt(r.up)}</span> · {t.people.down}{" "}
-                    <span className="money">{data.fmt(r.down)}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
+      {reasonBlock(t.people.lentByReason, summary.lentByReason)}
+      {reasonBlock(t.people.borrowedByReason, summary.borrowedByReason)}
 
       <section className={styles.historySection}>
         <h2 className={`section-title ${styles.historyHead}`}>{t.people.history}</h2>
         {timeline.length === 0 && <p className="page muted">{t.people.noHistory}</p>}
-        {timeline.slice(0, HISTORY_LIMIT).map(({ movement, delta, balance }) => (
-          <MovementRow
-            key={movement.id}
-            movement={movement}
-            data={data}
-            delta={delta}
-            neutralTone
-            showTime={false}
-            balanceAfter={`${formatShortDate(movement.date)} · ${stateText(balance)}`}
-            onClick={() => openEdit(movement.id)}
-          />
-        ))}
+        {timeline.slice(0, HISTORY_LIMIT).map(({ movement, delta, balance }) => {
+          // Loans show what's still open; everything else the running balance.
+          const lot = lotById.get(movement.id);
+          const status = lot?.isLoan
+            ? t.people.lotState(lot.remaining ? data.fmt(lot.remaining) : null)
+            : stateText(balance);
+          return (
+            <MovementRow
+              key={movement.id}
+              movement={movement}
+              data={data}
+              delta={delta}
+              neutralTone
+              showTime={false}
+              balanceAfter={`${formatShortDate(movement.date)} · ${status}`}
+              onClick={() => openEdit(movement.id)}
+            />
+          );
+        })}
         {summary.opening !== 0 && (
           <p className={styles.openingNote}>
             {t.people.summary.opening}: {stateText(summary.opening)}

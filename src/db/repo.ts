@@ -265,7 +265,10 @@ function clean(d: MovementDraft): MovementDraft {
   if (["lend", "repayment", "settlement", "borrow"].includes(d.type)) out.personId = d.personId;
   if (d.type === "repayment" || d.type === "settlement") {
     out.direction = d.direction;
-    if (d.priorDebt) out.priorDebt = true;
+    const forgiven = d.type === "settlement" && d.forgiven;
+    if (forgiven) out.forgiven = true;
+    // Forgiving a debt the app never knew about changes nothing.
+    else if (d.priorDebt) out.priorDebt = true;
   }
   if (d.reasonId && REASON_GROUP_BY_TYPE[d.type]) out.reasonId = d.reasonId;
   if (d.type === "adjustment" && d.targetBalance !== undefined) out.targetBalance = d.targetBalance;

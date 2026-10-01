@@ -8,22 +8,12 @@ import { useQuickAdd } from "@/components/quick-add/QuickAdd";
 import { Badge, Button, ChipGroup, Field, IconButton, inputClass } from "@/components/ui";
 import { Sheet } from "@/components/ui/Sheet";
 import { filterMovements, groupByDay, type MovementFilter } from "@/domain/query";
-import type { MovementType } from "@/domain/types";
+import { ENTRY_KINDS, ENTRY_TYPES, type EntryKind } from "@/domain/entry";
 import { t } from "@/i18n";
 import { formatDayHeader, fromDateInput, toDateInput } from "@/lib/dates";
 import styles from "./movimientos.module.css";
 
 const PAGE = 150;
-const TYPES: MovementType[] = [
-  "expense",
-  "income",
-  "transfer",
-  "lend",
-  "repayment",
-  "settlement",
-  "borrow",
-  "adjustment",
-];
 const ALL = "all";
 
 export default function MovementsPage() {
@@ -32,6 +22,7 @@ export default function MovementsPage() {
   const [filter, setFilter] = useState<MovementFilter>({});
   const [sheetOpen, setSheetOpen] = useState(false);
   const [limit, setLimit] = useState(PAGE);
+  const [kind, setKind] = useState<string>(ALL);
 
   const filtered = useMemo(
     () => (data ? filterMovements(data.movements, filter) : []),
@@ -78,9 +69,12 @@ export default function MovementsPage() {
 
       <ChipGroup
         label={t.movements.type}
-        options={[allOption, ...TYPES.map((v) => ({ value: v, label: t.movementTypeShort[v] }))]}
-        value={filter.types?.[0] ?? ALL}
-        onChange={(v) => set({ types: v === ALL ? undefined : [v as MovementType] })}
+        options={[allOption, ...ENTRY_KINDS.map((k) => ({ value: k, label: t.entryKind[k] }))]}
+        value={kind}
+        onChange={(v) => {
+          setKind(v);
+          set({ types: v === ALL ? undefined : ENTRY_TYPES[v as EntryKind] });
+        }}
       />
 
       <p className={`muted ${styles.count}`}>{t.movements.count(filtered.length)}</p>

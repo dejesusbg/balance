@@ -94,6 +94,11 @@ export interface Movement {
    * because that debt was never recorded.
    */
   priorDebt?: boolean;
+  /**
+   * Settlement only: the debt was forgiven (nothing was given in exchange).
+   * Same ledger effect as an in-kind settlement.
+   */
+  forgiven?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -121,14 +126,13 @@ export interface CurrencyConfig {
 }
 
 /**
- * Which reason group each movement type uses. Repayments have no reason:
- * the "why" belongs to the loan being repaid. Transfers and adjustments
- * don't have one either.
+ * Which reason group each movement type uses. Anything that settles a debt
+ * (repayment, in-kind, forgiveness) has no reason: the "why" belongs to the
+ * loan. Transfers and adjustments don't have one either.
  */
 export const REASON_GROUP_BY_TYPE: Partial<Record<MovementType, ReasonGroup>> = {
   income: "income",
   expense: "expense",
   lend: "loan",
-  settlement: "loan",
   borrow: "loan",
 };

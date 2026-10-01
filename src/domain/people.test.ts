@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { personBalances } from "./ledger";
-import { peopleWithBalances, personSummary, personTimeline } from "./people";
+import { debtLots, peopleWithBalances, personSummary, personTimeline } from "./people";
 import type { Movement, MovementType, Person } from "./types";
 
 const person = (id: string, openingBalance = 0, order = 0): Person => ({
@@ -31,11 +31,12 @@ describe("personSummary", () => {
   const movements = [
     mv("lend", 50_000, { reasonId: "lunch" }),
     mv("lend", 20_000, { reasonId: "emergency" }),
-    mv("repayment", 30_000, { direction: "in", reasonId: "lunch" }),
-    mv("settlement", 12_000, { direction: "in", reasonId: "lunch" }),
+    mv("repayment", 30_000, { direction: "in" }),
+    mv("settlement", 12_000, { direction: "in" }),
     mv("borrow", 5_000, { reasonId: "emergency" }),
-    mv("repayment", 5_000, { direction: "out", reasonId: "emergency" }),
+    mv("repayment", 5_000, { direction: "out" }),
     mv("settlement", 1_000, { direction: "out" }),
+    mv("settlement", 4_000, { direction: "in", forgiven: true }),
     mv("lend", 999, { personId: "mom", reasonId: "lunch" }),
   ];
 
@@ -49,27 +50,101 @@ describe("personSummary", () => {
       iPaid: 5_000,
       kindIn: 12_000,
       kindOut: 1_000,
+      forgivenIn: 4_000,
+      forgivenOut: 0,
     });
     expect(s.balance).toBe(personBalances([dad], movements).get("dad"));
-    expect(s.balance).toBe(10_000 + 70_000 - 5_000 - 30_000 + 5_000 - 12_000 + 1_000);
   });
 
   it("counts prior-debt payments apart, without touching the balance", () => {
     const prior = [
-      mv("repayment", 30_000, { direction: "in", priorDebt: true, reasonId: "lunch" }),
+      mv("repayment", 30_000, { direction: "in", priorDebt: true }),
       mv("repayment", 4_000, { direction: "out", priorDebt: true }),
     ];
     const s = personSummary(person("dad"), prior);
-    expect(s).toMatchObject({ balance: 0, paidMe: 0, priorIn: 30_000, priorOut: 4_000, byReason: [] });
+    expect(s).toMatchObject({ balance: 0, paidMe: 0, priorIn: 30_000, priorOut: 4_000, lentByReason: [] });
+  });
+});
+
+describe("debtLots (FIFO)", () => {
+  const dad = person("dad");
+
+  it("pays off the oldest loan first", () => {
+    const a = mv("lend", 50_000, { reasonId: "lunch", date: 1 });
+    const b = mv("lend", 20_000, { reasonId: "emergency", date: 2 });
+    const pay = mv("repayment", 60_000, { direction: "in", date: 3 });
+    const lots = debtLots(dad, [pay, b, a]);
+    expect(lots.map((l) => [l.movementId, l.amount, l.remaining])).toEqual([
+      [a.id, 50_000, 0],
+      [b.id, 20_000, 10_000],
+    ]);
+    const s = personSummary(dad, [a, b, pay]);
+    expect(s.lentByReason).toEqual([
+      { reasonId: "lunch", amount: 50_000, open: 0 },
+      { reasonId: "emergency", amount: 20_000, open: 10_000 },
+    ]);
   });
 
-  it("breaks loans and in-kind settlements down by reason, ignoring repayments", () => {
-    const s = personSummary(dad, movements);
-    expect(s.byReason).toEqual([
-      { reasonId: "lunch", up: 50_000, down: 12_000 },
-      { reasonId: "emergency", up: 20_000, down: 5_000 },
-      { reasonId: undefined, up: 1_000, down: 0 },
+  it("uses the opening balance as the first lot", () => {
+    const lots = debtLots(person("dad", 15_000), [
+      mv("lend", 10_000, { date: 1 }),
+      mv("settlement", 20_000, { direction: "in", date: 2 }),
     ]);
+    expect(lots.map((l) => [l.movementId, l.remaining])).toEqual([
+      ["opening", 0],
+      [expect.any(String), 5_000],
+    ]);
+  });
+
+  it("an overpayment opens a lot on the other side", () => {
+    const lots = debtLots(dad, [
+      mv("lend", 10_000, { date: 1 }),
+      mv("repayment", 15_000, { direction: "in", date: 2 }),
+    ]);
+    expect(lots.at(-1)).toMatchObject({ side: "iOwe", amount: 5_000, remaining: 5_000, isLoan: false });
+  });
+
+  it("a loan that offsets an older debt keeps its full amount but less open", () => {
+    const lots = debtLots(dad, [
+      mv("borrow", 10_000, { date: 1 }),
+      mv("lend", 30_000, { reasonId: "gift", date: 2 }),
+    ]);
+    expect(lots.map((l) => [l.side, l.amount, l.remaining])).toEqual([
+      ["iOwe", 10_000, 0],
+      ["theyOwe", 30_000, 20_000],
+    ]);
+  });
+
+  it("forgiveness pays down lots like any settlement", () => {
+    const lots = debtLots(dad, [
+      mv("lend", 10_000, { date: 1 }),
+      mv("settlement", 10_000, { direction: "in", forgiven: true, date: 2 }),
+    ]);
+    expect(lots[0].remaining).toBe(0);
+  });
+
+  it("open lots always add up to the balance (random ledgers)", () => {
+    let seed = 99;
+    const r = () => ((seed = (seed * 1664525 + 1013904223) % 2 ** 32) / 2 ** 32);
+    const types: MovementType[] = ["lend", "borrow", "repayment", "settlement"];
+    for (let run = 0; run < 20; run++) {
+      const p = person("dad", Math.round((r() - 0.5) * 100_000));
+      const ms = Array.from({ length: 60 }, () =>
+        mv(types[Math.floor(r() * 4)], 1 + Math.floor(r() * 80_000), {
+          direction: r() < 0.5 ? "in" : "out",
+          date: Math.floor(r() * 1e6),
+          priorDebt: r() < 0.05,
+        }),
+      );
+      const lots = debtLots(p, ms);
+      const open = (side: string) =>
+        lots.filter((l) => l.side === side).reduce((sum, l) => sum + l.remaining, 0);
+      const theyOwe = open("theyOwe");
+      const iOwe = open("iOwe");
+      expect(theyOwe - iOwe).toBe(personBalances([p], ms).get("dad"));
+      expect(Math.min(theyOwe, iOwe)).toBe(0);
+      expect(lots.every((l) => l.remaining >= 0 && l.remaining <= l.amount)).toBe(true);
+    }
   });
 });
 

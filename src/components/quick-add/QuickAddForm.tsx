@@ -5,7 +5,15 @@ import { useMemo, useState } from "react";
 import { deleteMovement, saveMovement, undo, ValidationFailed, type MovementInput } from "@/db/repo";
 import { accountBalanceAt, previewPersonBalance } from "@/domain/ledger";
 import { rankReasons } from "@/domain/query";
-import { REASON_GROUP_BY_TYPE, type Direction, type ID, type MovementType } from "@/domain/types";
+import {
+  ENTRY_KINDS,
+  entryOf,
+  PAYMENT_METHODS,
+  toMovementShape,
+  type EntryKind,
+  type PaymentMethod,
+} from "@/domain/entry";
+import { REASON_GROUP_BY_TYPE, type Direction, type ID } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
@@ -14,36 +22,29 @@ import { Button, ChipGroup, Field, inputClass } from "../ui";
 import { Keypad } from "../ui/Keypad";
 import styles from "./QuickAdd.module.css";
 
-const TYPES: MovementType[] = [
-  "expense",
-  "income",
-  "transfer",
-  "lend",
-  "repayment",
-  "settlement",
-  "borrow",
-  "adjustment",
-];
-const PERSON_TYPES: MovementType[] = ["lend", "repayment", "settlement", "borrow"];
-
 interface FormState {
-  type: MovementType;
+  kind: EntryKind;
+  /** Loan: "out" = I lent, "in" = they lent me. Payment: "in" = their debt shrinks. */
+  direction: Direction;
+  method: PaymentMethod;
   /** For adjustments: the real balance typed by the user. */
   amount: number;
   accountId?: ID;
   toAccountId?: ID;
   personId?: ID;
   reasonId?: ID;
-  direction: Direction;
   note: string;
   /** null = "now" at save time. */
   date: number | null;
   fee: number;
-  /** Repayment/settlement of a debt from before the app. */
+  /** Payment of a debt from before the app. */
   priorDebt: boolean;
 }
 
 export type QuickAddPreset = Partial<FormState>;
+
+/** Default direction when switching to a category. */
+const defaultDirection = (kind: EntryKind): Direction => (kind === "loan" ? "out" : "in");
 
 function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): FormState {
   const editing = editId ? data.movements.find((m) => m.id === editId) : undefined;
@@ -52,13 +53,12 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
       ? (data.movements.find((m) => m.id === editing.linkedId)?.amount ?? 0)
       : 0;
     return {
-      type: editing.type,
+      ...entryOf(editing),
       amount: editing.type === "adjustment" ? (editing.targetBalance ?? 0) : editing.amount,
       accountId: editing.accountId,
       toAccountId: editing.toAccountId,
       personId: editing.personId,
       reasonId: editing.reasonId,
-      direction: editing.direction ?? "in",
       note: editing.note,
       date: editing.date,
       fee,
@@ -69,13 +69,15 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
   const last = data.settings.lastUsed;
   const accountId =
     active.find((a) => a.id === last.accountId)?.id ?? active[0]?.id;
-  const type = preset?.type ?? (last.type && last.type !== "adjustment" ? last.type : "expense");
+  const lastKind = last.type && last.type !== "adjustment" ? entryOf({ type: last.type }).kind : "expense";
+  const kind = preset?.kind ?? lastKind;
   return {
-    type,
+    kind,
+    direction: defaultDirection(kind),
+    method: "money",
     amount: 0,
     accountId,
     toAccountId: active.find((a) => a.id !== accountId)?.id,
-    direction: "in",
     note: "",
     date: null,
     fee: 0,
@@ -109,12 +111,16 @@ export function QuickAddForm({
     setS((prev) => ({ ...prev, ...patch }));
   };
 
-  const changeType = (type: MovementType) => {
-    const patch: Partial<FormState> = { type };
-    // Keep the reason only if it belongs to the new type's group.
-    const ranked = rankReasons(data.reasons, [], type);
-    if (!ranked.some((r) => r.id === s.reasonId)) patch.reasonId = undefined;
-    if (type === "transfer" && s.toAccountId === s.accountId) {
+  const shape = toMovementShape(s);
+  const type = shape.type;
+
+  const changeKind = (kind: EntryKind) => {
+    if (kind === s.kind) return;
+    const patch: Partial<FormState> = { kind, direction: defaultDirection(kind), method: "money" };
+    // Keep the reason only if it belongs to the new category's group.
+    const next = toMovementShape({ ...s, ...patch } as FormState).type;
+    if (!rankReasons(data.reasons, [], next).some((r) => r.id === s.reasonId)) patch.reasonId = undefined;
+    if (kind === "transfer" && s.toAccountId === s.accountId) {
       patch.toAccountId = data.accounts.find((a) => !a.archived && a.id !== s.accountId)?.id;
     }
     set(patch);
@@ -125,16 +131,18 @@ export function QuickAddForm({
   );
   const activePeople = data.people.filter((p) => !p.archived || p.id === s.personId);
   const reasons = useMemo(() => {
-    const ranked = rankReasons(data.reasons, data.movements, s.type);
+    const ranked = rankReasons(data.reasons, data.movements, type);
     // Keep an archived reason visible when editing a movement that uses it.
     const current = s.reasonId ? data.reasonById.get(s.reasonId) : undefined;
     return current && !ranked.includes(current) && current.archived ? [...ranked, current] : ranked;
-  }, [data, s.type, s.reasonId]);
+  }, [data, type, s.reasonId]);
 
-  const isAdjustment = s.type === "adjustment";
-  const needsPerson = PERSON_TYPES.includes(s.type);
-  const needsDirection = s.type === "repayment" || s.type === "settlement";
-  const usesAccount = s.type !== "settlement";
+  const isAdjustment = s.kind === "adjustment";
+  const isPayment = s.kind === "payment";
+  const needsPerson = s.kind === "loan" || isPayment;
+  // In-kind payments and forgiveness don't touch accounts.
+  const usesAccount = type !== "settlement";
+  const canBePriorDebt = isPayment && s.method !== "forgiven";
 
   // Show how the person's balance changes, and warn when a repayment
   // overshoots the recorded debt (usually an unrecorded older debt).
@@ -143,20 +151,19 @@ export function QuickAddForm({
     const person = data.personById.get(s.personId);
     if (!person) return null;
     const draft = {
+      ...shape,
       id: editId ?? "draft",
-      type: s.type,
       amount: s.amount,
       date: s.date ?? openedAt,
       accountId: s.accountId,
       personId: s.personId,
-      direction: s.direction,
-      priorDebt: needsDirection && s.priorDebt,
+      priorDebt: canBePriorDebt && s.priorDebt,
       note: "",
       createdAt: 0,
       updatedAt: 0,
     };
     return { name: person.name, ...previewPersonBalance(person, data.movements, draft, editId) };
-  }, [needsPerson, needsDirection, s, data, editId, openedAt]);
+  }, [needsPerson, canBePriorDebt, shape, s, data, editId, openedAt]);
 
   // Adjustment: compare the typed real balance with what the app computes.
   const adjustment = useMemo(() => {
@@ -171,18 +178,17 @@ export function QuickAddForm({
   async function save() {
     const date = s.date ?? Date.now();
     const input: MovementInput = {
-      type: s.type,
+      ...shape,
       amount: isAdjustment ? (adjustment?.delta ?? 0) : s.amount,
       date,
       accountId: usesAccount ? s.accountId : undefined,
-      toAccountId: s.type === "transfer" ? s.toAccountId : undefined,
+      toAccountId: type === "transfer" ? s.toAccountId : undefined,
       personId: needsPerson ? s.personId : undefined,
       reasonId: s.reasonId,
-      direction: needsDirection ? s.direction : undefined,
       targetBalance: isAdjustment ? s.amount : undefined,
-      priorDebt: needsDirection && s.priorDebt,
+      priorDebt: canBePriorDebt && s.priorDebt,
       note: s.note,
-      fee: s.type === "transfer" ? s.fee : 0,
+      fee: type === "transfer" ? s.fee : 0,
     };
     setBusy(true);
     try {
@@ -226,9 +232,9 @@ export function QuickAddForm({
       <div className={styles.scroll}>
         <ChipGroup
           label={t.movements.type}
-          options={TYPES.map((type) => ({ value: type, label: t.movementTypeShort[type] }))}
-          value={s.type}
-          onChange={changeType}
+          options={ENTRY_KINDS.map((kind) => ({ value: kind, label: t.entryKind[kind] }))}
+          value={s.kind}
+          onChange={changeKind}
         />
 
         <div className={styles.amountBlock}>
@@ -251,7 +257,7 @@ export function QuickAddForm({
         </div>
 
         {usesAccount && (
-          <Field label={s.type === "transfer" ? t.quickAdd.fromAccount : t.quickAdd.account}>
+          <Field label={type === "transfer" ? t.quickAdd.fromAccount : t.quickAdd.account}>
               <ChipGroup
                 label={t.quickAdd.account}
                 options={accountOptions}
@@ -268,7 +274,7 @@ export function QuickAddForm({
           </Field>
         )}
 
-        {s.type === "transfer" && (
+        {type === "transfer" && (
           <Field label={t.quickAdd.toAccount}>
             <ChipGroup
               label={t.quickAdd.toAccount}
@@ -294,13 +300,36 @@ export function QuickAddForm({
           </Field>
         )}
 
-        {needsDirection && (
-          <Field label={t.quickAdd.direction}>
+        {s.kind === "loan" && (
+          <Field label={t.loanDirection.label}>
             <ChipGroup
-              label={t.quickAdd.direction}
+              label={t.loanDirection.label}
+              options={(["out", "in"] as const).map((d) => ({ value: d, label: t.loanDirection[d] }))}
+              value={s.direction}
+              onChange={(direction) => set({ direction })}
+            />
+          </Field>
+        )}
+
+        {isPayment && (
+          <Field label={t.paymentMethod.label}>
+            <ChipGroup
+              label={t.paymentMethod.label}
+              options={PAYMENT_METHODS.map((m) => ({ value: m, label: t.paymentMethod[m] }))}
+              value={s.method}
+              onChange={(method) => set({ method, ...(method === "forgiven" ? { priorDebt: false } : {}) })}
+            />
+            {t.paymentHint[s.method] && <span className={styles.empty}>{t.paymentHint[s.method]}</span>}
+          </Field>
+        )}
+
+        {isPayment && (
+          <Field label={t.paymentDirection.label}>
+            <ChipGroup
+              label={t.paymentDirection.label}
               options={(["in", "out"] as const).map((d) => ({
                 value: d,
-                label: t.direction[s.type as "repayment" | "settlement"][d],
+                label: t.paymentDirection[s.method][d],
               }))}
               value={s.direction}
               onChange={(direction) => set({ direction })}
@@ -320,7 +349,7 @@ export function QuickAddForm({
           </div>
         )}
 
-        {needsDirection && personPreview && (personPreview.overshoots || s.priorDebt) && (
+        {canBePriorDebt && personPreview && (personPreview.overshoots || s.priorDebt) && (
           <label className={styles.toggle}>
             <input
               type="checkbox"
@@ -334,7 +363,7 @@ export function QuickAddForm({
           </label>
         )}
 
-        {REASON_GROUP_BY_TYPE[s.type] && (
+        {REASON_GROUP_BY_TYPE[type] && (
           <Field label={t.quickAdd.reason}>
             {reasons.length ? (
               <ChipGroup
@@ -383,7 +412,7 @@ export function QuickAddForm({
                 onChange={(e) => e.target.value && set({ date: fromLocalInput(e.target.value) })}
               />
             </Field>
-            {s.type === "transfer" && (
+            {type === "transfer" && (
               <Field label={`${t.quickAdd.fee} (${data.fmt(s.fee, { reveal: true })})`} htmlFor="qa-fee">
                 <input
                   id="qa-fee"

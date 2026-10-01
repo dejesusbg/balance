@@ -80,6 +80,16 @@ describe("saveMovement", () => {
     expect(m.toAccountId).toBeUndefined();
   });
 
+  it("stores forgiven only on settlements, without reason or priorDebt", async () => {
+    const base = { amount: 5_000, date: 1, personId: mom, reasonId: lunch, note: "", forgiven: true, priorDebt: true };
+    const { id: a } = await saveMovement({ ...base, type: "settlement", direction: "in" }, undefined, db);
+    const { id: b } = await saveMovement({ ...base, type: "repayment", direction: "in", accountId: nu }, undefined, db);
+    expect(await db.movements.get(a)).toMatchObject({ forgiven: true });
+    expect((await db.movements.get(a))!.reasonId).toBeUndefined();
+    expect((await db.movements.get(a))!.priorDebt).toBeUndefined();
+    expect((await db.movements.get(b))!.forgiven).toBeUndefined();
+  });
+
   it("does not store a reason on repayments", async () => {
     const { id } = await saveMovement(
       { type: "repayment", direction: "in", amount: 10_000, date: 1, accountId: nu, personId: mom, reasonId: lunch, note: "" },
