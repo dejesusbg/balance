@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Database, Trash2, Wallet } from "lucide-react";
+import { ChevronRight, Database, Trash2, Users, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useAppData } from "@/components/AppData";
 import { useFeedback } from "@/components/Feedback";
@@ -31,6 +31,15 @@ export default function SettingsPage() {
         <span className={styles.tileText}>
           <span className={styles.tileTitle}>{t.settings.accounts}</span>
           <span className={styles.tileSub}>{t.settings.accountsHint}</span>
+        </span>
+        <ChevronRight size={22} strokeWidth={1.75} aria-hidden />
+      </Link>
+
+      <Link href="/personas" className={`${styles.tile} ${styles.tileGap}`}>
+        <Users size={24} strokeWidth={1.75} aria-hidden />
+        <span className={styles.tileText}>
+          <span className={styles.tileTitle}>{t.settings.people}</span>
+          <span className={styles.tileSub}>{t.settings.peopleHint}</span>
         </span>
         <ChevronRight size={22} strokeWidth={1.75} aria-hidden />
       </Link>

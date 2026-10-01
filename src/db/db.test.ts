@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { describe, expect, it } from "vitest";
-import { accountBalances } from "@/domain/ledger";
+import { accountBalances, previewPersonBalance } from "@/domain/ledger";
 import { validateMovement } from "@/domain/validate";
 import { BalanceDB } from "./schema";
 import { generateSampleMovements } from "./sample";
@@ -39,6 +39,14 @@ describe("database", () => {
       expect(v).toBeGreaterThanOrEqual(0);
     }
     expect(ms.every((m) => m.date <= now)).toBe(true);
+    // No repayment or in-kind settlement overshoots the debt at that point.
+    const sorted = [...ms].sort((a, b) => a.date - b.date);
+    sorted.forEach((m, i) => {
+      const p = people.find((x) => x.id === m.personId);
+      if (!p) return;
+      expect(previewPersonBalance(p, sorted.slice(0, i), m).overshoots).toBe(false);
+    });
+    expect(sorted.some((m) => m.type === "repayment")).toBe(true);
     db.close();
   });
 });

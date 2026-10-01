@@ -48,6 +48,7 @@ export function generateSampleMovements(opts: {
     accounts[2] ?? accounts[0],
   ];
   const balances = new Map(accounts.map((a) => [a.id, a.openingBalance]));
+  const owed = new Map(people.map((p) => [p.id, p.openingBalance]));
   const out: Movement[] = [];
 
   const push = (d: MovementDraft) => {
@@ -59,6 +60,7 @@ export function generateSampleMovements(opts: {
     for (const [id, delta] of Object.entries(eff.accounts)) {
       balances.set(id, (balances.get(id) ?? 0) + delta);
     }
+    if (eff.person) owed.set(eff.person.id, (owed.get(eff.person.id) ?? 0) + eff.person.delta);
     const ts = d.date;
     out.push({ ...d, id: newId(), createdAt: ts, updatedAt: ts });
   };
@@ -167,40 +169,55 @@ export function generateSampleMovements(opts: {
       });
     }
 
-    // Loans with family.
-    if (people.length && r() < 0.06) {
+    // Loans with family. Repayments and in-kind settlements never exceed
+    // the open debt, like real life.
+    if (people.length && r() < 0.07) {
       const p = pick(people);
+      const balance = owed.get(p.id) ?? 0;
       const kind = r();
-      if (kind < 0.45) {
+      const loanReason = () =>
+        reason("loan", pick(["Almuerzo/comida", "Compra de regalo", "Emergencia"]));
+      if (balance > 0 && kind < 0.35) {
+        push({
+          type: "repayment",
+          direction: "in",
+          amount: Math.min(balance, between(10_000, 60_000)),
+          date: at(16),
+          accountId: wallet.id,
+          personId: p.id,
+          reasonId: loanReason(),
+          note: "",
+        });
+      } else if (balance > 0 && kind < 0.55) {
+        push({
+          type: "settlement",
+          direction: "in",
+          amount: Math.min(balance, between(12_000, 35_000)),
+          date: at(13),
+          personId: p.id,
+          reasonId: reason("loan", "Almuerzo/comida"),
+          note: "Me invitó a almorzar",
+        });
+      } else if (balance < 0 && kind < 0.6) {
+        push({
+          type: "repayment",
+          direction: "out",
+          amount: Math.min(-balance, between(20_000, 100_000)),
+          date: at(17),
+          accountId: main.id,
+          personId: p.id,
+          reasonId: reason("loan", "Emergencia"),
+          note: "",
+        });
+      } else if (kind < 0.9) {
         push({
           type: "lend",
           amount: between(10_000, 90_000),
           date: at(15),
           accountId: pick([wallet.id, cash.id, main.id]),
           personId: p.id,
-          reasonId: reason("loan", pick(["Almuerzo/comida", "Compra de regalo", "Emergencia"])),
+          reasonId: loanReason(),
           note: "",
-        });
-      } else if (kind < 0.7) {
-        push({
-          type: "repayment",
-          direction: "in",
-          amount: between(10_000, 60_000),
-          date: at(16),
-          accountId: wallet.id,
-          personId: p.id,
-          reasonId: reason("loan", "Otro"),
-          note: "",
-        });
-      } else if (kind < 0.9) {
-        push({
-          type: "settlement",
-          direction: "in",
-          amount: between(12_000, 35_000),
-          date: at(13),
-          personId: p.id,
-          reasonId: reason("loan", "Almuerzo/comida"),
-          note: "Me invitó a almorzar",
         });
       } else {
         push({

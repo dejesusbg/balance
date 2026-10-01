@@ -5,8 +5,10 @@ import { BalanceDB } from "./schema";
 import {
   adjustAccount,
   createAccount,
+  createPerson,
   deleteMovement,
   moveAccount,
+  updatePerson,
   saveMovement,
   undo,
   ValidationFailed,
@@ -178,5 +180,16 @@ describe("accounts", () => {
     await moveAccount(id, -1, db);
     const names = (await db.accounts.orderBy("order").toArray()).map((a) => a.name);
     expect(names).toEqual(["Nu", "Nequi", "Daviplata", "Efectivo"]);
+  });
+});
+
+describe("people", () => {
+  it("creates people with a signed opening balance that counts in their balance", async () => {
+    const id = await createPerson(" Tía ", -15_000, db);
+    expect(await db.people.get(id)).toMatchObject({ name: "Tía", order: 3, openingBalance: -15_000 });
+    await updatePerson(mom, { openingBalance: 40_000 }, db);
+    const pb = personBalances(await db.people.toArray(), await db.movements.toArray());
+    expect(pb.get(mom)).toBe(40_000);
+    expect(pb.get(id)).toBe(-15_000);
   });
 });

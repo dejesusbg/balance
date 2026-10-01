@@ -1,0 +1,16 @@
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--text-brand);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+}
+
+.muted {
+  background: var(--fill-neutral);
+  color: var(--text-secondary);
+}

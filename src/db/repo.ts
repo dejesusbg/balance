@@ -2,7 +2,7 @@
 // the previous state of the rows it touched, so "Deshacer" can put them back.
 
 import { accountBalanceAt, adjustmentDelta } from "@/domain/ledger";
-import type { Account, Amount, ID, Movement, Settings } from "@/domain/types";
+import type { Account, Amount, ID, Movement, Person, Settings } from "@/domain/types";
 import {
   validateMovement,
   type MovementDraft,
@@ -174,14 +174,49 @@ export async function updateAccount(
 }
 
 /** Swaps an account with its neighbour in the list order. */
-export async function moveAccount(id: ID, dir: -1 | 1, db: BalanceDB = getDB()) {
-  await db.transaction("rw", db.accounts, async () => {
-    const list = await db.accounts.orderBy("order").toArray();
-    const i = list.findIndex((a) => a.id === id);
+export const moveAccount = (id: ID, dir: -1 | 1, db: BalanceDB = getDB()) =>
+  moveInOrder(db, "accounts", id, dir);
+
+// ---- People ----
+
+export async function createPerson(
+  name: string,
+  openingBalance: Amount,
+  db: BalanceDB = getDB(),
+): Promise<ID> {
+  const last = await db.people.orderBy("order").last();
+  const person: Person = {
+    id: newId(),
+    name: name.trim(),
+    openingBalance,
+    archived: false,
+    order: (last?.order ?? -1) + 1,
+    createdAt: Date.now(),
+  };
+  await db.people.add(person);
+  return person.id;
+}
+
+export async function updatePerson(
+  id: ID,
+  patch: Partial<Pick<Person, "name" | "openingBalance" | "archived">>,
+  db: BalanceDB = getDB(),
+) {
+  await db.people.update(id, {
+    ...patch,
+    ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+  });
+}
+
+async function moveInOrder(db: BalanceDB, tableName: "accounts" | "people", id: ID, dir: -1 | 1) {
+  const table = db.table<{ id: ID; order: number }, ID>(tableName);
+  await db.transaction("rw", table, async () => {
+    const list = await table.orderBy("order").toArray();
+    const i = list.findIndex((x) => x.id === id);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= list.length) return;
     [list[i], list[j]] = [list[j], list[i]];
-    await Promise.all(list.map((a, order) => db.accounts.update(a.id, { order })));
+    await Promise.all(list.map((x, order) => table.update(x.id, { order })));
   });
 }
 

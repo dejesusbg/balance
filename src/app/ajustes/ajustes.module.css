@@ -25,6 +25,10 @@
   margin-left: auto;
 }
 
+.tileGap {
+  margin-top: var(--space-16);
+}
+
 .tileText {
   display: flex;
   flex-direction: column;

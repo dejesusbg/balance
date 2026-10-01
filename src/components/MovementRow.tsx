@@ -80,6 +80,7 @@ export function MovementRow({
   showTime = true,
   balanceAfter,
   delta,
+  neutralTone,
 }: {
   movement: Movement;
   data: AppData;
@@ -89,19 +90,22 @@ export function MovementRow({
   balanceAfter?: string;
   /** Effect on one account/person; overrides the global in/out reading. */
   delta?: number;
+  /** Keep the sign but don't color as in/out (e.g. a person's balance). */
+  neutralTone?: boolean;
 }) {
   const Icon = TYPE_ICON[m.type];
   const described = describeMovement(m, data);
   const { title, context } = described;
   const flow = delta === undefined ? described.flow : delta > 0 ? "in" : delta < 0 ? "out" : "neutral";
   const shown = delta ?? described.shown;
+  const tone = neutralTone ? "neutral" : flow;
   const subtitle = [context, m.note, showTime ? formatTime(m.date) : undefined]
     .filter(Boolean)
     .join(" · ");
 
   return (
     <button type="button" className={styles.row} onClick={onClick}>
-      <span className={`${styles.icon} ${styles[flow]}`} aria-hidden>
+      <span className={`${styles.icon} ${styles[tone]}`} aria-hidden>
         <Icon size={22} strokeWidth={1.75} />
       </span>
       <span className={styles.text}>
@@ -109,8 +113,8 @@ export function MovementRow({
         {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
       </span>
       <span className={styles.amountCol}>
-        <span className={`money ${styles.amount} money-${flow}`}>
-          {data.fmt(shown, { signed: flow === "in" })}
+        <span className={`money ${styles.amount} money-${tone}`}>
+          {data.fmt(shown, { signed: delta !== undefined ? shown > 0 : flow === "in" })}
         </span>
         {balanceAfter && <span className={`money ${styles.after}`}>{balanceAfter}</span>}
       </span>

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   // Dev only: let a phone on the same Wi-Fi load the dev server by IP
   // (Next blocks dev resources from other hosts by default).
-  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*", "*.local"],
+  allowedDevOrigins: ["127.0.0.1", "192.168.*.*", "10.*.*.*", "172.*.*.*", "*.local"],
 };
 
 export default nextConfig;

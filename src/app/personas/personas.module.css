@@ -1,0 +1,90 @@
+.page {
+  padding: calc(var(--space-24) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-16);
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.total strong {
+  font: var(--fw-semibold) var(--fs-body-lg) / var(--lh-body-lg) var(--font-sans);
+}
+
+.total strong:not(:global(.money-in)) {
+  color: var(--text-primary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-16) var(--space-16) var(--space-16) var(--screen-gutter);
+  border-bottom: var(--border-card) solid var(--divider);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background var(--dur-fast);
+}
+
+.row:active {
+  background: var(--surface-sunken);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font: var(--fw-medium) 17px/22px var(--font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.amountCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.state {
+  font: var(--fw-regular) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.amount {
+  font: var(--fw-semibold) 17px/22px var(--font-sans);
+}
+
+.chevron {
+  color: var(--text-secondary);
+  flex: none;
+}
