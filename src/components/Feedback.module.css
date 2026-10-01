@@ -64,17 +64,6 @@
   font-weight: var(--fw-semibold);
 }
 
-.action {
-  height: 40px;
-  padding: 0 var(--space-16);
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--purple-500);
-  color: #fff;
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
-}
-
 @keyframes rise {
   from { transform: translateY(16px); opacity: 0; }
   to { transform: none; opacity: 1; }

@@ -63,18 +63,3 @@ export function tithingHistory(movements: Movement[], rules: TithingRules): Tith
   }
   return out.reverse();
 }
-
-/**
- * What to offer to set aside right after saving an income: its tithe, capped
- * at what's actually pending (tithes given in advance reduce it). 0 = no prompt.
- */
-export function tithingSuggestion(
-  income: Movement,
-  movementsIncludingIt: Movement[],
-  rules: TithingRules,
-): Amount {
-  const share = tithingDelta(income, rules);
-  if (share <= 0) return 0;
-  const { pending } = tithingSummary(movementsIncludingIt, rules);
-  return Math.max(0, Math.min(share, pending));
-}

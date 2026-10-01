@@ -16,8 +16,8 @@ import {
   type PaymentMethod,
   type Side,
 } from "@/domain/entry";
-import { titheOf, tithingRules, tithingSuggestion } from "@/domain/tithing";
-import { REASON_GROUP_BY_TYPE, type ID, type Movement } from "@/domain/types";
+import { titheOf } from "@/domain/tithing";
+import { REASON_GROUP_BY_TYPE, type ID } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
@@ -212,29 +212,7 @@ export function QuickAddForm({
     try {
       const res = await saveMovement(input, editId);
       onDone();
-      const tithe = editId ? 0 : suggestTithe({ ...input, id: res.id, createdAt: date, updatedAt: date });
-      if (tithe > 0) {
-        // One tap to set aside the tithe from the same account, or ignore it.
-        toast(`${t.quickAdd.saved}. ${t.tithing.prompt(data.fmt(tithe, { reveal: true }))}`, {
-          onUndo: () => undo(res.undo),
-          action: {
-            label: t.tithing.promptAction,
-            run: async () => {
-              const r = await saveMovement({
-                type: "expense",
-                amount: tithe,
-                date: currentTime(),
-                accountId: input.accountId,
-                reasonId: tithingRules(data.reasons).tithingReasonId,
-                note: "",
-              });
-              toast(t.tithing.recorded, { onUndo: () => undo(r.undo) });
-            },
-          },
-        });
-      } else {
-        toast(editId ? t.quickAdd.updated : t.quickAdd.saved, { onUndo: () => undo(res.undo) });
-      }
+      toast(editId ? t.quickAdd.updated : t.quickAdd.saved, { onUndo: () => undo(res.undo) });
     } catch (e) {
       if (e instanceof ValidationFailed) {
         const first = e.errors[0];
@@ -245,12 +223,6 @@ export function QuickAddForm({
     } finally {
       setBusy(false);
     }
-  }
-
-  function suggestTithe(saved: Movement): number {
-    if (saved.type !== "income") return 0;
-    const rules = tithingRules(data.reasons);
-    return tithingSuggestion(saved, [...data.movements, saved], rules);
   }
 
   async function remove() {

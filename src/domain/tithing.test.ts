@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { titheOf, tithingHistory, tithingRules, tithingSuggestion, tithingSummary } from "./tithing";
+import { titheOf, tithingHistory, tithingRules, tithingSummary } from "./tithing";
 import type { Movement, MovementType, Reason } from "./types";
 
 const reason = (id: string, group: Reason["group"], extra: Partial<Reason> = {}): Reason => ({
@@ -62,15 +62,5 @@ describe("tithing", () => {
       [-50_000, 0],
       [50_000, 50_000],
     ]);
-  });
-
-  it("suggests the income's tithe, capped by what's pending", () => {
-    const i = income(300_000);
-    expect(tithingSuggestion(i, [i], rules)).toBe(30_000);
-    const advance = mv("expense", 20_000, "tithe");
-    expect(tithingSuggestion(i, [advance, i], rules)).toBe(10_000);
-    expect(tithingSuggestion(i, [mv("expense", 99_000, "tithe"), i], rules)).toBe(0);
-    const unmarked = income(300_000, false);
-    expect(tithingSuggestion(unmarked, [unmarked], rules)).toBe(0);
   });
 });
