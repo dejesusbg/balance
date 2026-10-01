@@ -186,3 +186,31 @@ export function accountBalanceAt(
     movements.filter((m) => m.date <= at),
   ).get(account.id)!;
 }
+
+export interface PersonPreview {
+  before: Amount;
+  after: Amount;
+  /**
+   * A repayment or in-kind settlement is meant to shrink a debt toward zero.
+   * True when it overshoots (e.g. "they paid me" while they owed nothing),
+   * which usually means an earlier debt was never recorded.
+   */
+  overshoots: boolean;
+}
+
+/** How a draft movement would change a person's balance. */
+export function previewPersonBalance(
+  person: Person,
+  movements: Movement[],
+  draft: Movement,
+  /** Movement being edited, excluded from "before". */
+  editingId?: ID,
+): PersonPreview {
+  const others = movements.filter((m) => m.id !== editingId);
+  const before = personBalances([person], others).get(person.id)!;
+  const eff = movementEffect(draft).person;
+  const after = before + (eff?.id === person.id ? eff.delta : 0);
+  const settles = draft.type === "repayment" || draft.type === "settlement";
+  const overshoots = settles && after !== 0 && Math.sign(after) !== Math.sign(before);
+  return { before, after, overshoots };
+}

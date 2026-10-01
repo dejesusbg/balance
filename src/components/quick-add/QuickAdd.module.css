@@ -77,6 +77,23 @@
   font-weight: var(--fw-semibold);
 }
 
+.warning {
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--status-warn-tint);
+  color: var(--text-primary);
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+}
+
+.warning strong {
+  color: var(--status-warn);
+  font-weight: var(--fw-semibold);
+}
+
+.warning p {
+  margin: var(--space-4) 0 0;
+}
+
 .empty {
   margin: 0;
   color: var(--text-secondary);

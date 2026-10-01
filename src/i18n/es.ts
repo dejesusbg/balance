@@ -86,6 +86,10 @@ export const es = {
     backspace: "Borrar último dígito",
     close: "Cerrar",
     feeOf: "Comisión de transferencia",
+    personState: (sign: number, amount: string) =>
+      sign > 0 ? `te debe ${amount}` : sign < 0 ? `le debes ${amount}` : "a paz y salvo",
+    overshoot: (name: string) =>
+      `Esto supera la deuda registrada con ${name}. Si la deuda venía de antes, regístrala como saldo inicial de la persona.`,
   },
   movements: {
     title: "Movimientos",

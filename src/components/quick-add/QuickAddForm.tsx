@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { deleteMovement, saveMovement, undo, ValidationFailed, type MovementInput } from "@/db/repo";
-import { accountBalanceAt } from "@/domain/ledger";
+import { accountBalanceAt, previewPersonBalance } from "@/domain/ledger";
 import { rankReasons } from "@/domain/query";
 import type { Direction, ID, MovementType } from "@/domain/types";
 import { t } from "@/i18n";
@@ -131,6 +131,27 @@ export function QuickAddForm({
   const needsPerson = PERSON_TYPES.includes(s.type);
   const needsDirection = s.type === "repayment" || s.type === "settlement";
   const usesAccount = s.type !== "settlement";
+
+  // Show how the person's balance changes, and warn when a repayment
+  // overshoots the recorded debt (usually an unrecorded older debt).
+  const personPreview = useMemo(() => {
+    if (!needsPerson || !s.personId || s.amount <= 0) return null;
+    const person = data.personById.get(s.personId);
+    if (!person) return null;
+    const draft = {
+      id: editId ?? "draft",
+      type: s.type,
+      amount: s.amount,
+      date: s.date ?? openedAt,
+      accountId: s.accountId,
+      personId: s.personId,
+      direction: s.direction,
+      note: "",
+      createdAt: 0,
+      updatedAt: 0,
+    };
+    return { name: person.name, ...previewPersonBalance(person, data.movements, draft, editId) };
+  }, [needsPerson, s, data, editId, openedAt]);
 
   // Adjustment: compare the typed real balance with what the app computes.
   const adjustment = useMemo(() => {
@@ -281,6 +302,18 @@ export function QuickAddForm({
           </Field>
         )}
 
+        {personPreview && (
+          <div className={personPreview.overshoots ? styles.warning : styles.hint} role="status">
+            {personPreview.name}:{" "}
+            {t.quickAdd.personState(Math.sign(personPreview.before), data.fmt(Math.abs(personPreview.before), { reveal: true }))}
+            {" → "}
+            <strong>
+              {t.quickAdd.personState(Math.sign(personPreview.after), data.fmt(Math.abs(personPreview.after), { reveal: true }))}
+            </strong>
+            {personPreview.overshoots && <p>{t.quickAdd.overshoot(personPreview.name)}</p>}
+          </div>
+        )}
+
         {s.type !== "transfer" && !isAdjustment && (
           <Field label={t.quickAdd.reason}>
             {reasons.length ? (
@@ -356,7 +389,12 @@ export function QuickAddForm({
       </div>
 
       <div className={styles.footer}>
-        <Keypad value={s.amount} onChange={(amount) => set({ amount })} />
+        <Keypad
+          onChange={(update) => {
+            setError(null);
+            setS((prev) => ({ ...prev, amount: update(prev.amount) }));
+          }}
+        />
         {error && (
           <p className={styles.error} role="alert">
             {error}

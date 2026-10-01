@@ -7,6 +7,7 @@ import {
   movementEffect,
   personBalances,
   personHistory,
+  previewPersonBalance,
   totals,
 } from "./ledger";
 import type { Account, Movement, MovementType, Person } from "./types";
@@ -292,4 +293,39 @@ describe("invariants (random ledgers)", () => {
       expect(liquid(ms)).toBe(opening + external);
     });
   }
+});
+
+describe("previewPersonBalance", () => {
+  const dad = person("dad");
+  const draft = (type: MovementType, amount: number, direction?: "in" | "out") =>
+    mv(type, amount, { accountId: "nu", personId: "dad", direction });
+
+  it("flags a repayment from someone who owed nothing", () => {
+    const p = previewPersonBalance(dad, [], draft("repayment", 30_000, "in"));
+    expect(p).toEqual({ before: 0, after: -30_000, overshoots: true });
+  });
+
+  it("does not flag a repayment within the debt", () => {
+    const loan = draft("lend", 50_000);
+    const p = previewPersonBalance(dad, [loan], draft("repayment", 30_000, "in"));
+    expect(p).toEqual({ before: 50_000, after: 20_000, overshoots: false });
+    expect(previewPersonBalance(dad, [loan], draft("repayment", 50_000, "in")).overshoots).toBe(false);
+  });
+
+  it("flags paying back more than I owed, and in-kind overshoots", () => {
+    const borrowed = draft("borrow", 10_000);
+    expect(previewPersonBalance(dad, [borrowed], draft("repayment", 15_000, "out")).overshoots).toBe(true);
+    expect(previewPersonBalance(dad, [], draft("settlement", 5_000, "in")).overshoots).toBe(true);
+  });
+
+  it("never flags new loans and excludes the movement being edited", () => {
+    expect(previewPersonBalance(dad, [], draft("lend", 1)).overshoots).toBe(false);
+    const pay = draft("repayment", 30_000, "in");
+    const loan = draft("lend", 30_000);
+    expect(previewPersonBalance(dad, [loan, pay], pay, pay.id)).toEqual({
+      before: 30_000,
+      after: 0,
+      overshoots: false,
+    });
+  });
 });
