@@ -1,0 +1,114 @@
+.fab {
+  position: fixed;
+  right: max(var(--screen-gutter), calc(50vw - 280px + var(--screen-gutter)));
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-16));
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-fab);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.fab:active {
+  transform: scale(0.94);
+}
+
+.fab[hidden] {
+  display: none;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--screen-gutter) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+}
+
+.scroll > * {
+  flex-shrink: 0;
+}
+
+.amountBlock {
+  padding: var(--space-8) 0 var(--space-4);
+}
+
+.amountLabel {
+  font: var(--fw-regular) var(--fs-body) / var(--lh-body) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.amount {
+  font: var(--fw-bold) var(--fs-display) / var(--lh-display) var(--font-sans);
+  letter-spacing: var(--ls-tight);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.amountZero {
+  color: var(--text-tertiary);
+}
+
+.hint {
+  margin-top: var(--space-4);
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.hint strong {
+  color: var(--text-brand);
+  font-weight: var(--fw-semibold);
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-body-sm);
+}
+
+.moreToggle {
+  align-self: flex-start;
+  margin-left: calc(-1 * var(--space-8));
+}
+
+.footer {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--screen-gutter) calc(var(--space-12) + env(safe-area-inset-bottom));
+  border-top: var(--border-card) solid var(--divider);
+  background: var(--surface-sheet);
+}
+
+.error {
+  margin: 0;
+  color: var(--status-bad);
+  font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+}
+
+.footerRow {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.footerRow > :last-child {
+  flex: 1;
+}

@@ -1,81 +1,215 @@
 /*
- * Design tokens. PROVISIONAL: neutral placeholders until the Claude Design
- * System is imported. Components must only use these variables, so swapping
- * the values here restyles the whole app.
+ * Design tokens, adapted from the "Nu Design System" project in Claude Design
+ * (claude.ai/design/p/4dce6a1b-…). Names follow that system.
+ *
+ * Adaptations for a money tracker (not in the source system):
+ * - Semantic in/out/warning colors for amounts and health indicators.
+ * - A dark theme derived from the purple scale.
+ * - Tabular numerals for money.
+ * Components must only use these variables.
  */
 :root {
-  /* Color */
-  --color-bg: #ffffff;
-  --color-surface: #f4f4f5;
-  --color-surface-raised: #ffffff;
-  --color-border: #e4e4e7;
-  --color-text: #18181b;
-  --color-text-muted: #71717a;
-  --color-primary: #18181b;
-  --color-on-primary: #ffffff;
-  --color-positive: #15803d;
-  --color-negative: #b91c1c;
-  --color-warning: #a16207;
+  /* Brand purple scale */
+  --purple-900: #4a0677;
+  --purple-700: #6c1e9f;
+  --purple-600: #820ad1;
+  --purple-500: #9436e2;
+  --purple-400: #a359d6;
+  --purple-300: #c6a7f7;
+  --purple-100: #f5ecff;
+
+  /* Neutrals */
+  --gray-900: #191919;
+  --gray-700: #5c5c5c;
+  --gray-500: #787878;
+  --gray-400: #9e9e9e;
+  --gray-300: #d9d9d9;
+  --gray-200: #e6e6e6;
+  --gray-100: #efefef;
+
+  /* Semantic aliases */
+  --brand: var(--purple-600);
+  --brand-strong: var(--purple-700);
+  --brand-soft: var(--purple-500);
+  --brand-tint: var(--purple-100);
+
+  --text-primary: #000000;
+  --text-secondary: var(--gray-700);
+  --text-tertiary: #8a8a8a;
+  --text-brand: var(--purple-600);
+  --text-on-brand: #ffffff;
+
+  --surface-page: #ffffff;
+  --surface-sunken: var(--gray-100);
+  --surface-card: #ffffff;
+  --surface-sheet: #ffffff;
+  --surface-hero: var(--purple-600);
+  --surface-hero-card: var(--purple-500);
+
+  --fill-neutral: var(--gray-100);
+  --fill-neutral-pressed: var(--gray-200);
+  --border-subtle: var(--gray-100);
+  --divider: var(--gray-100);
+  --overlay-scrim: rgb(0 0 0 / 0.48);
+  --focus-ring: var(--purple-500);
+
+  /* Money tracker extensions (AA contrast on page and sunken surfaces) */
+  --money-in: #0a7a43;
+  --money-out: #000000;
+  --money-neutral: var(--gray-700);
+  --status-good: #0a7a43;
+  --status-good-tint: #e3f5ea;
+  --status-warn: #a35c00;
+  --status-warn-tint: #fdf0dc;
+  --status-bad: #c8102e;
+  --status-bad-tint: #fde6e9;
 
   /* Typography */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-numeric: var(--font-sans);
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.75rem;
-  --text-2xl: 2.25rem;
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-bold: 700;
+  --font-sans: var(--font-hanken), "Hanken Grotesk", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fs-display: 36px;
+  --lh-display: 40px;
+  --fs-title-1: 28px;
+  --lh-title-1: 34px;
+  --fs-title-2: 24px;
+  --lh-title-2: 30px;
+  --fs-title-3: 20px;
+  --lh-title-3: 26px;
+  --fs-body-lg: 18px;
+  --lh-body-lg: 24px;
+  --fs-body: 16px;
+  --lh-body: 22px;
+  --fs-body-sm: 14px;
+  --lh-body-sm: 20px;
+  --fs-caption: 12px;
+  --lh-caption: 16px;
+  --ls-tight: -0.01em;
 
   /* Spacing */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --screen-gutter: 24px;
 
-  /* Shape & elevation */
+  /* Shape */
+  --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 12px;
+  --radius-md: 16px;
   --radius-lg: 20px;
-  --radius-full: 999px;
-  --shadow-raised: 0 4px 16px rgb(0 0 0 / 0.12);
+  --radius-pill: 999px;
+  --border-card: 2px;
 
-  /* Layout */
+  /* Sizes */
+  --size-action-circle: 72px;
+  --size-avatar: 48px;
+  --size-icon: 24px;
+  --size-touch: 48px;
+  --btn-h-lg: 48px;
+  --btn-h-md: 40px;
+  --btn-h-sm: 32px;
   --nav-height: 64px;
-  --tap-min: 44px;
+
+  /* Elevation: flat UI; only sheets and the floating add button lift */
+  --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.08);
+  --shadow-fab: 0 6px 20px rgb(130 10 209 / 0.32);
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+
+  color-scheme: light;
 }
 
+@media (max-width: 359px) {
+  :root {
+    --screen-gutter: 16px;
+    --size-action-circle: 64px;
+  }
+}
+
+/* Dark theme, applied from the OS setting unless the user forces light. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-bg: #09090b;
-    --color-surface: #18181b;
-    --color-surface-raised: #27272a;
-    --color-border: #3f3f46;
-    --color-text: #fafafa;
-    --color-text-muted: #a1a1aa;
-    --color-primary: #fafafa;
-    --color-on-primary: #09090b;
-    --color-positive: #4ade80;
-    --color-negative: #f87171;
-    --color-warning: #facc15;
+    --brand: var(--purple-500);
+    --brand-strong: var(--purple-400);
+    --brand-soft: var(--purple-700);
+    --brand-tint: #2a1640;
+    --text-primary: #f6f3f9;
+    --text-secondary: #b9b2c2;
+    --text-tertiary: #8c8495;
+    --text-brand: #c6a7f7;
+    --surface-page: #0f0c13;
+    --surface-sunken: #1b1721;
+    --surface-card: #1b1721;
+    --surface-sheet: #1b1721;
+    --surface-hero: #4a0677;
+    --surface-hero-card: #6c1e9f;
+    --fill-neutral: #27222e;
+    --fill-neutral-pressed: #332d3b;
+    --border-subtle: #27222e;
+    --divider: #27222e;
+    --overlay-scrim: rgb(0 0 0 / 0.64);
+    --focus-ring: var(--purple-300);
+    --money-in: #4fd18b;
+    --money-out: #f6f3f9;
+    --money-neutral: #b9b2c2;
+    --status-good: #4fd18b;
+    --status-good-tint: #12301f;
+    --status-warn: #f2b45a;
+    --status-warn-tint: #36260d;
+    --status-bad: #ff7a8a;
+    --status-bad-tint: #3a1219;
+    --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.5);
+    --shadow-fab: 0 6px 20px rgb(0 0 0 / 0.5);
+    color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #09090b;
-  --color-surface: #18181b;
-  --color-surface-raised: #27272a;
-  --color-border: #3f3f46;
-  --color-text: #fafafa;
-  --color-text-muted: #a1a1aa;
-  --color-primary: #fafafa;
-  --color-on-primary: #09090b;
-  --color-positive: #4ade80;
-  --color-negative: #f87171;
-  --color-warning: #facc15;
+  --brand: var(--purple-500);
+  --brand-strong: var(--purple-400);
+  --brand-soft: var(--purple-700);
+  --brand-tint: #2a1640;
+  --text-primary: #f6f3f9;
+  --text-secondary: #b9b2c2;
+  --text-tertiary: #8c8495;
+  --text-brand: #c6a7f7;
+  --surface-page: #0f0c13;
+  --surface-sunken: #1b1721;
+  --surface-card: #1b1721;
+  --surface-sheet: #1b1721;
+  --surface-hero: #4a0677;
+  --surface-hero-card: #6c1e9f;
+  --fill-neutral: #27222e;
+  --fill-neutral-pressed: #332d3b;
+  --border-subtle: #27222e;
+  --divider: #27222e;
+  --overlay-scrim: rgb(0 0 0 / 0.64);
+  --focus-ring: var(--purple-300);
+  --money-in: #4fd18b;
+  --money-out: #f6f3f9;
+  --money-neutral: #b9b2c2;
+  --status-good: #4fd18b;
+  --status-good-tint: #12301f;
+  --status-warn: #f2b45a;
+  --status-warn-tint: #36260d;
+  --status-bad: #ff7a8a;
+  --status-bad-tint: #3a1219;
+  --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.5);
+  --shadow-fab: 0 6px 20px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
 }

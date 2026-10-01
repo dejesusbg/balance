@@ -15,15 +15,9 @@ export const usePeople = () =>
 export const useReasons = () =>
   useLiveQuery(() => getDB().reasons.orderBy("order").toArray());
 
-/** Active (not soft-deleted) movements, newest first. */
+/** All movements, newest first. */
 export const useMovements = () =>
-  useLiveQuery(() =>
-    getDB()
-      .movements.orderBy("date")
-      .reverse()
-      .filter((m) => !m.deletedAt)
-      .toArray(),
-  );
+  useLiveQuery(() => getDB().movements.orderBy("date").reverse().toArray());
 
 export const useSettings = () =>
   useLiveQuery(() => getDB().settings.get("settings"));

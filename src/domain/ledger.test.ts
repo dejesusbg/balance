@@ -151,11 +151,6 @@ describe("balances", () => {
     expect(t.netWorth).toBe(t.liquid + 8_000 - 5_000);
   });
 
-  it("ignores soft-deleted movements", () => {
-    const deleted = mv("income", 999, { accountId: "cash", deletedAt: 1 });
-    expect(accountBalances([cash], [deleted]).get("cash")).toBe(0);
-  });
-
   it("editing a movement recalculates (pure derivation)", () => {
     const m = mv("expense", 100, { accountId: "cash" });
     expect(accountBalances([cash], [m]).get("cash")).toBe(-100);
@@ -251,7 +246,6 @@ describe("invariants (random ledgers)", () => {
         personId: pick(people).id,
         direction: pick(["in", "out"] as const),
         date: Math.floor(r() * 1e9),
-        deletedAt: r() < 0.1 ? 1 : null,
       });
     });
   }
@@ -276,7 +270,7 @@ describe("invariants (random ledgers)", () => {
     });
 
     it(`money is conserved: transfers and in-kind settlements never change the total (seed ${seed})`, () => {
-      const ms = randomLedger(seed, 400).filter((m) => !m.deletedAt);
+      const ms = randomLedger(seed, 400);
       const liquid = (list: Movement[]) =>
         [...accountBalances(accounts, list).values()].reduce((a, b) => a + b, 0);
       const opening = liquid([]);

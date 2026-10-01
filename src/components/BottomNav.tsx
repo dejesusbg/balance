@@ -1,33 +1,38 @@
 "use client";
 
+import { ChartPie, House, ListOrdered, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/i18n";
 import styles from "./BottomNav.module.css";
 
 const ITEMS = [
-  { href: "/", label: t.nav.home },
-  { href: "/movimientos", label: t.nav.movements },
-  { href: "/personas", label: t.nav.people },
-  { href: "/reportes", label: t.nav.reports },
-  { href: "/ajustes", label: t.nav.settings },
+  { href: "/", label: t.nav.home, icon: House },
+  { href: "/movimientos", label: t.nav.movements, icon: ListOrdered },
+  { href: "/personas", label: t.nav.people, icon: Users },
+  { href: "/reportes", label: t.nav.reports, icon: ChartPie },
+  { href: "/ajustes", label: t.nav.settings, icon: Settings },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav className={styles.nav} aria-label="Principal">
-      {ITEMS.map((item) => {
+      {ITEMS.map(({ href, label, icon: Icon }) => {
         const active =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          href === "/"
+            ? pathname === "/" || pathname.startsWith("/cuentas")
+            : pathname.startsWith(href);
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={href}
+            href={href}
             className={styles.item}
             aria-current={active ? "page" : undefined}
           >
-            {item.label}
+            <Icon size={24} strokeWidth={1.75} aria-hidden />
+            <span>{label}</span>
+            <span className={styles.dot} aria-hidden />
           </Link>
         );
       })}

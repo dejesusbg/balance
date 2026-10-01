@@ -1,0 +1,31 @@
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--fill-neutral);
+  color: var(--text-primary);
+  font: var(--fw-medium) 24px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+  user-select: none;
+  transition: background var(--dur-fast);
+}
+
+.key:active {
+  background: var(--fill-neutral-pressed);
+}
+
+@media (max-height: 700px) {
+  .key {
+    height: 44px;
+  }
+}

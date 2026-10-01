@@ -1,0 +1,130 @@
+.hero {
+  background: var(--surface-hero);
+  color: var(--text-on-brand);
+  padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-24);
+}
+
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 calc(-1 * var(--space-12)) var(--space-16) 0;
+}
+
+.brand {
+  font: var(--fw-semibold) var(--fs-title-3) / var(--lh-title-3) var(--font-sans);
+  letter-spacing: var(--ls-tight);
+}
+
+.heroLabel {
+  font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
+  opacity: 0.88;
+}
+
+.heroAmount {
+  font: var(--fw-bold) var(--fs-display) / var(--lh-display) var(--font-sans);
+  letter-spacing: var(--ls-tight);
+  margin-top: var(--space-4);
+}
+
+.heroCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  margin-top: var(--space-24);
+}
+
+.heroCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--surface-hero-card);
+  color: var(--text-on-brand);
+  text-decoration: none;
+  font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+}
+
+.heroCard strong {
+  font: var(--fw-semibold) var(--fs-body-lg) / var(--lh-body-lg) var(--font-sans);
+}
+
+.section {
+  padding: var(--space-24) 0 var(--space-8);
+  border-bottom: var(--border-card) solid var(--divider);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--screen-gutter) var(--space-8);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.sectionHead svg {
+  color: var(--text-secondary);
+}
+
+.sectionHeadPlain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 var(--screen-gutter) var(--space-8);
+}
+
+.sectionHeadPlain a {
+  font-weight: var(--fw-medium);
+}
+
+.accounts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-12) var(--screen-gutter);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background var(--dur-fast);
+}
+
+.account:active {
+  background: var(--surface-sunken);
+}
+
+.accountIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-avatar);
+  height: var(--size-avatar);
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--text-brand);
+  flex: none;
+}
+
+.accountName {
+  flex: 1;
+  font: var(--fw-medium) 17px/22px var(--font-sans);
+}
+
+.accountBalance {
+  font: var(--fw-semibold) 17px/22px var(--font-sans);
+}
+
+.latest {
+  padding: var(--space-24) 0 0;
+}
+
+.empty {
+  padding: var(--space-8) var(--screen-gutter);
+  margin: 0;
+}

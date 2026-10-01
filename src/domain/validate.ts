@@ -19,7 +19,7 @@ export type ValidationError =
 
 export type MovementDraft = Omit<
   Movement,
-  "id" | "createdAt" | "updatedAt" | "deletedAt"
+  "id" | "createdAt" | "updatedAt"
 >;
 
 /** Returns the list of problems with a movement; empty means valid. */

@@ -90,8 +90,6 @@ export interface Movement {
   targetBalance?: Amount;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  /** Soft delete, used for undo. */
-  deletedAt?: Timestamp | null;
 }
 
 export interface Settings {
@@ -100,6 +98,8 @@ export interface Settings {
   tithingRate: number;
   theme: "system" | "light" | "dark";
   lastExportAt: Timestamp | null;
+  /** Mask amounts on screen (privacy in public). */
+  hideAmounts?: boolean;
   lastUsed: {
     type?: MovementType;
     accountId?: ID;

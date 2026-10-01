@@ -1,0 +1,51 @@
+.page {
+  padding: calc(var(--space-24) + env(safe-area-inset-top)) var(--screen-gutter) 0;
+}
+
+/* Grey tile row, as in the design system's TileButton */
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-20);
+  min-height: 72px;
+  padding: 0 var(--space-20);
+  border-radius: var(--radius-lg);
+  background: var(--fill-neutral);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background var(--dur-fast);
+}
+
+.tile:active {
+  background: var(--fill-neutral-pressed);
+}
+
+.tile > svg:last-child {
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.tileText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tileTitle {
+  font: var(--fw-medium) 17px/22px var(--font-sans);
+}
+
+.tileSub {
+  font: var(--fw-regular) 15px/20px var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.section {
+  margin-top: var(--space-32);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}

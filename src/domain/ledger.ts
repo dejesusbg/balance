@@ -10,8 +10,6 @@ export interface MovementEffect {
   person?: { id: ID; delta: Amount };
 }
 
-const isActive = (m: Movement) => !m.deletedAt;
-
 /** How a single movement changes accounts and people. */
 export function movementEffect(m: Movement): MovementEffect {
   const accounts: Record<ID, Amount> = {};
@@ -69,7 +67,6 @@ export function accountBalances(
   const balances = new Map<ID, Amount>();
   for (const acc of accounts) balances.set(acc.id, acc.openingBalance);
   for (const m of movements) {
-    if (!isActive(m)) continue;
     for (const [id, delta] of Object.entries(movementEffect(m).accounts)) {
       balances.set(id, (balances.get(id) ?? 0) + delta);
     }
@@ -84,7 +81,6 @@ export function personBalances(
   const balances = new Map<ID, Amount>();
   for (const p of people) balances.set(p.id, p.openingBalance);
   for (const m of movements) {
-    if (!isActive(m)) continue;
     const eff = movementEffect(m).person;
     if (eff) balances.set(eff.id, (balances.get(eff.id) ?? 0) + eff.delta);
   }
@@ -159,7 +155,6 @@ function runningHistory(
   const out: HistoryEntry[] = [];
   let balance = opening;
   for (const m of sortChronologically(movements)) {
-    if (!isActive(m)) continue;
     const delta = deltaOf(m);
     if (delta === null) continue;
     balance += delta;
