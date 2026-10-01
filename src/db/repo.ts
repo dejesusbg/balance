@@ -9,6 +9,8 @@ import {
   type ID,
   type Movement,
   type Person,
+  type Reason,
+  type ReasonGroup,
   type Settings,
 } from "@/domain/types";
 import {
@@ -225,6 +227,60 @@ async function moveInOrder(db: BalanceDB, tableName: "accounts" | "people", id: 
     if (i < 0 || j < 0 || j >= list.length) return;
     [list[i], list[j]] = [list[j], list[i]];
     await Promise.all(list.map((x, order) => table.update(x.id, { order })));
+  });
+}
+
+// ---- Reasons ----
+
+export async function createReason(
+  group: ReasonGroup,
+  name: string,
+  db: BalanceDB = getDB(),
+): Promise<ID> {
+  const inGroup = await db.reasons.where("group").equals(group).toArray();
+  const reason: Reason = {
+    id: newId(),
+    name: name.trim(),
+    group,
+    order: Math.max(-1, ...inGroup.map((r) => r.order)) + 1,
+    archived: false,
+    essential: false,
+    // New income reasons count toward tithing by default, like the seeds.
+    countsForTithing: group === "income",
+    createdAt: Date.now(),
+  };
+  await db.reasons.add(reason);
+  return reason.id;
+}
+
+export async function updateReason(
+  id: ID,
+  patch: Partial<Pick<Reason, "name" | "essential" | "countsForTithing" | "archived">>,
+  db: BalanceDB = getDB(),
+) {
+  const reason = await db.reasons.get(id);
+  if (!reason) return;
+  // Built-in reasons (tithing, transfer fee) are used by the app itself.
+  if (patch.archived && reason.role) throw new Error("Built-in reasons can't be archived");
+  await db.reasons.update(id, {
+    ...patch,
+    ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+  });
+}
+
+/** Swaps a reason with its neighbour within its group. */
+export async function moveReason(id: ID, dir: -1 | 1, db: BalanceDB = getDB()) {
+  await db.transaction("rw", db.reasons, async () => {
+    const reason = await db.reasons.get(id);
+    if (!reason) return;
+    const list = (await db.reasons.where("group").equals(reason.group).toArray()).sort(
+      (a, b) => a.order - b.order,
+    );
+    const i = list.findIndex((r) => r.id === id);
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    await Promise.all(list.map((r, order) => db.reasons.update(r.id, { order })));
   });
 }
 

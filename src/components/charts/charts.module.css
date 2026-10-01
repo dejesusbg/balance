@@ -1,0 +1,234 @@
+/* Chart series colors, validated with the dataviz palette script
+   (CVD + contrast) against each theme's surface. Text never uses them. */
+.figure,
+.section {
+  --series-in: #820ad1;
+  --series-out: #eb6834;
+  --series-neutral: #787878;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .figure,
+  :root:where(:not([data-theme="light"])) .section {
+    --series-in: #a359d6;
+    --series-out: #d95926;
+    --series-neutral: #8c8495;
+  }
+}
+:root[data-theme="dark"] .figure,
+:root[data-theme="dark"] .section {
+  --series-in: #a359d6;
+  --series-out: #d95926;
+  --series-neutral: #8c8495;
+}
+
+/* ---- Monthly chart ---- */
+.figure {
+  margin: 0;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-16);
+  margin-bottom: var(--space-8);
+  font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.legend span,
+.tooltip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatchIn,
+.swatchOut {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--series-in);
+}
+
+.swatchOut {
+  background: var(--series-out);
+}
+
+.plotWrap {
+  position: relative;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--divider);
+  stroke-width: 1;
+}
+
+.tick {
+  fill: var(--text-tertiary);
+  font: var(--fw-regular) 11px var(--font-sans);
+}
+
+.barIn {
+  fill: var(--series-in);
+}
+
+.barOut {
+  fill: var(--series-out);
+}
+
+.active .barIn,
+.active .barOut {
+  opacity: 0.8;
+}
+
+.hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.16), inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-primary);
+  font: var(--fw-regular) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tooltip strong {
+  font-weight: var(--fw-semibold);
+}
+
+.table {
+  width: 100%;
+  margin-top: var(--space-16);
+  border-collapse: collapse;
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+}
+
+.table th,
+.table td {
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--divider);
+  text-align: right;
+}
+
+.table th:first-child {
+  text-align: left;
+  font-weight: var(--fw-regular);
+}
+
+.table thead th {
+  color: var(--text-secondary);
+  font-weight: var(--fw-medium);
+}
+
+/* ---- Reason bars ---- */
+.section {
+  padding: var(--space-24) var(--screen-gutter);
+  border-bottom: var(--border-card) solid var(--divider);
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-16);
+}
+
+.total {
+  font: var(--fw-semibold) var(--fs-body-lg) / var(--lh-body-lg) var(--font-sans);
+}
+
+.change {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+}
+
+.rows {
+  list-style: none;
+  margin: var(--space-12) calc(-1 * var(--screen-gutter)) 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-12) var(--screen-gutter);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.row:active {
+  background: var(--surface-sunken);
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.rowName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
+}
+
+.rowAmount {
+  font: var(--fw-semibold) var(--fs-body) / var(--lh-body) var(--font-sans);
+}
+
+.chevron {
+  color: var(--text-tertiary);
+  flex: none;
+}
+
+.track {
+  display: block;
+  height: 8px;
+  border-radius: 0 4px 4px 0;
+}
+
+.fill_in,
+.fill_out,
+.fill_neutral {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--series-in);
+}
+
+.fill_out {
+  background: var(--series-out);
+}
+
+.fill_neutral {
+  background: var(--series-neutral);
+}
+
+.rowSub {
+  font: var(--fw-regular) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  color: var(--text-secondary);
+}

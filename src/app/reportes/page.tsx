@@ -1,10 +1,116 @@
-import { t } from "@/i18n";
+"use client";
 
-export default function Page() {
+import { useMemo, useState } from "react";
+import { useAppData } from "@/components/AppData";
+import { MonthlyChart } from "@/components/charts/MonthlyChart";
+import { ReasonBars } from "@/components/charts/ReasonBars";
+import { ChipGroup, Field, inputClass } from "@/components/ui";
+import {
+  buildReport,
+  monthlyTotals,
+  presetPeriod,
+  type Period,
+  type PeriodPreset,
+} from "@/domain/reports";
+import { t } from "@/i18n";
+import { fromDateInput, toDateInput } from "@/lib/dates";
+import styles from "./reportes.module.css";
+
+const PRESETS: PeriodPreset[] = ["thisMonth", "lastMonth", "last3", "custom"];
+
+export default function ReportsPage() {
+  const data = useAppData();
+  const [now] = useState(() => Date.now());
+  const [preset, setPreset] = useState<PeriodPreset>("thisMonth");
+  const [custom, setCustom] = useState<Period>(() => presetPeriod("last3", now));
+
+  const period = preset === "custom" ? custom : presetPeriod(preset, now);
+  const report = useMemo(() => (data ? buildReport(data.movements, period) : null), [data, period]);
+  const monthly = useMemo(() => (data ? monthlyTotals(data.movements, 6, now) : []), [data, now]);
+
+  if (!data || !report) return null;
+  const net = report.income.total - report.expense.total;
+
   return (
-    <div className="page">
-      <h1 className="page-title">{t.nav.reports}</h1>
-      <p className="muted">{t.common.soon}</p>
-    </div>
+    <>
+      <div className={styles.page}>
+        <h1 className="page-title">{t.reports.title}</h1>
+        <ChipGroup
+          label={t.reports.period}
+          options={PRESETS.map((p) => ({ value: p, label: t.reports.presets[p] }))}
+          value={preset}
+          onChange={setPreset}
+        />
+        {preset === "custom" && (
+          <div className={styles.dates}>
+            <Field label={t.reports.from} htmlFor="r-from">
+              <input
+                id="r-from"
+                type="date"
+                className={inputClass}
+                value={toDateInput(custom.from)}
+                max={toDateInput(custom.to)}
+                onChange={(e) => e.target.value && setCustom({ ...custom, from: fromDateInput(e.target.value) })}
+              />
+            </Field>
+            <Field label={t.reports.to} htmlFor="r-to">
+              <input
+                id="r-to"
+                type="date"
+                className={inputClass}
+                value={toDateInput(custom.to)}
+                min={toDateInput(custom.from)}
+                onChange={(e) => e.target.value && setCustom({ ...custom, to: fromDateInput(e.target.value, true) })}
+              />
+            </Field>
+          </div>
+        )}
+
+        <div className={styles.tiles}>
+          <div className={styles.tile}>
+            <span>{t.reports.in}</span>
+            <strong className="money">{data.fmt(report.income.total)}</strong>
+          </div>
+          <div className={styles.tile}>
+            <span>{t.reports.out}</span>
+            <strong className="money">{data.fmt(report.expense.total)}</strong>
+          </div>
+          <div className={styles.tile}>
+            <span>{t.reports.net}</span>
+            <strong className={`money ${net > 0 ? "money-in" : ""}`}>
+              {data.fmt(net, { signed: net > 0 })}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <ReasonBars title={t.reports.expenseByReason} breakdown={report.expense} series="out" period={period} data={data} />
+      <ReasonBars title={t.reports.incomeByReason} breakdown={report.income} series="in" period={period} data={data} />
+      <ReasonBars title={t.reports.lentByReason} breakdown={report.lent} series="neutral" period={period} data={data} />
+      {report.borrowed.total > 0 && (
+        <ReasonBars
+          title={t.reports.borrowedByReason}
+          breakdown={report.borrowed}
+          series="neutral"
+          period={period}
+          data={data}
+        />
+      )}
+      {report.forgivenByMe > 0 && (
+        <section className={styles.forgiven}>
+          <div>
+            <h2 className="section-title">{t.reports.forgiven}</h2>
+            <p className="muted">{t.reports.forgivenHint}</p>
+          </div>
+          <strong className="money">{data.fmt(report.forgivenByMe)}</strong>
+        </section>
+      )}
+
+      <section className={styles.monthly}>
+        <h2 className="section-title">{t.reports.monthly}</h2>
+        <p className="muted">{t.reports.monthlyHint}</p>
+        <MonthlyChart data={monthly} fmt={(n) => data.fmt(n)} />
+      </section>
+    </>
   );
 }

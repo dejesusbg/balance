@@ -1,7 +1,8 @@
 "use client";
 
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { useAppData } from "@/components/AppData";
 import { MovementRow } from "@/components/MovementRow";
 import { useQuickAdd } from "@/components/quick-add/QuickAdd";
@@ -17,9 +18,29 @@ const PAGE = 150;
 const ALL = "all";
 
 export default function MovementsPage() {
+  return (
+    <Suspense>
+      <MovementsFromUrl />
+    </Suspense>
+  );
+}
+
+/** Reports link here with ?motivo=&desde=&hasta= to preset the filters. */
+function MovementsFromUrl() {
+  const params = useSearchParams();
+  const num = (k: string) => (params.get(k) ? Number(params.get(k)) : undefined);
+  const initial: MovementFilter = {
+    reasonId: params.get("motivo") ?? undefined,
+    from: num("desde"),
+    to: num("hasta"),
+  };
+  return <Movements key={params.toString()} initial={initial} />;
+}
+
+function Movements({ initial }: { initial: MovementFilter }) {
   const data = useAppData();
   const { openEdit } = useQuickAdd();
-  const [filter, setFilter] = useState<MovementFilter>({});
+  const [filter, setFilter] = useState<MovementFilter>(initial);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [limit, setLimit] = useState(PAGE);
   const [kind, setKind] = useState<string>(ALL);

@@ -6,6 +6,9 @@ import {
   adjustAccount,
   createAccount,
   createPerson,
+  createReason,
+  moveReason,
+  updateReason,
   deleteMovement,
   moveAccount,
   updatePerson,
@@ -220,5 +223,32 @@ describe("people", () => {
     const pb = personBalances(await db.people.toArray(), await db.movements.toArray());
     expect(pb.get(mom)).toBe(40_000);
     expect(pb.get(id)).toBe(-15_000);
+  });
+});
+
+describe("reasons", () => {
+  const names = async (group: string) =>
+    (await db.reasons.where("group").equals(group).toArray())
+      .sort((a, b) => a.order - b.order)
+      .map((r) => r.name);
+
+  it("adds at the end of its group with sensible defaults", async () => {
+    const id = await createReason("income", " Clases ", db);
+    expect(await db.reasons.get(id)).toMatchObject({ name: "Clases", group: "income", order: 4, countsForTithing: true });
+    const ex = await createReason("expense", "Mascotas", db);
+    expect(await db.reasons.get(ex)).toMatchObject({ order: 8, countsForTithing: false, essential: false });
+  });
+
+  it("reorders within the group only", async () => {
+    await moveReason(work, 1, db);
+    expect((await names("income")).slice(0, 2)).toEqual(["Regalo", "Tarea/Trabajo"]);
+    expect((await names("expense"))[0]).toBe("Compra deseada");
+  });
+
+  it("edits flags and refuses to archive built-in reasons", async () => {
+    await updateReason(food, { essential: false, name: "Comida y mercado" }, db);
+    expect(await db.reasons.get(food)).toMatchObject({ essential: false, name: "Comida y mercado" });
+    const tithing = (await db.reasons.toArray()).find((r) => r.role === "tithing")!;
+    await expect(updateReason(tithing.id, { archived: true }, db)).rejects.toThrow();
   });
 });

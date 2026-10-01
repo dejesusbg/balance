@@ -114,6 +114,29 @@ export function Field({ label, children, htmlFor }: { label: string; children: R
 }
 
 export const inputClass = styles.input;
+
+export function Toggle({
+  checked,
+  onChange,
+  title,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  title: string;
+  hint?: string;
+}) {
+  return (
+    <label className={styles.toggle}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className={styles.toggleText}>
+        <strong>{title}</strong>
+        {hint && <span>{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
 export const fieldLabelClass = styles.fieldLabel;
 
 export function Badge({ children }: { children: ReactNode }) {

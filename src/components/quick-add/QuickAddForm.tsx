@@ -18,7 +18,7 @@ import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
 import { useFeedback } from "../Feedback";
-import { Button, ChipGroup, Field, inputClass } from "../ui";
+import { Button, ChipGroup, Field, inputClass, Toggle } from "../ui";
 import { Keypad } from "../ui/Keypad";
 import styles from "./QuickAdd.module.css";
 
@@ -350,17 +350,12 @@ export function QuickAddForm({
         )}
 
         {canBePriorDebt && personPreview && (personPreview.overshoots || s.priorDebt) && (
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={s.priorDebt}
-              onChange={(e) => set({ priorDebt: e.target.checked })}
-            />
-            <span>
-              <strong>{t.quickAdd.priorDebt}</strong>
-              <span>{t.quickAdd.priorDebtHint(personPreview.name)}</span>
-            </span>
-          </label>
+          <Toggle
+            checked={s.priorDebt}
+            onChange={(priorDebt) => set({ priorDebt })}
+            title={t.quickAdd.priorDebt}
+            hint={t.quickAdd.priorDebtHint(personPreview.name)}
+          />
         )}
 
         {REASON_GROUP_BY_TYPE[type] && (
