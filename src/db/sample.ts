@@ -10,6 +10,7 @@ import type {
   ReasonGroup,
 } from "@/domain/types";
 import type { MovementDraft } from "@/domain/validate";
+import { newId } from "./seed";
 
 const DAY = 86_400_000;
 
@@ -59,7 +60,7 @@ export function generateSampleMovements(opts: {
       balances.set(id, (balances.get(id) ?? 0) + delta);
     }
     const ts = d.date;
-    out.push({ ...d, id: crypto.randomUUID(), createdAt: ts, updatedAt: ts });
+    out.push({ ...d, id: newId(), createdAt: ts, updatedAt: ts });
   };
 
   const days = (opts.months ?? 6) * 30;
