@@ -9,7 +9,7 @@ import { useQuickAdd } from "@/components/quick-add/QuickAdd";
 import { Badge, Button, ChipGroup, Field, IconButton, inputClass } from "@/components/ui";
 import { Sheet } from "@/components/ui/Sheet";
 import { filterMovements, groupByDay, type MovementFilter } from "@/domain/query";
-import { ENTRY_KINDS, ENTRY_TYPES, type EntryKind } from "@/domain/entry";
+import { OPTIONS_BY_SIDE, SIDES, type EntryOption, type Side } from "@/domain/entry";
 import { t } from "@/i18n";
 import { formatDayHeader, fromDateInput, toDateInput } from "@/lib/dates";
 import styles from "./movimientos.module.css";
@@ -43,7 +43,6 @@ function Movements({ initial }: { initial: MovementFilter }) {
   const [filter, setFilter] = useState<MovementFilter>(initial);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [limit, setLimit] = useState(PAGE);
-  const [kind, setKind] = useState<string>(ALL);
 
   const filtered = useMemo(
     () => (data ? filterMovements(data.movements, filter) : []),
@@ -57,7 +56,7 @@ function Movements({ initial }: { initial: MovementFilter }) {
     setLimit(PAGE);
     setFilter((f) => ({ ...f, ...patch }));
   };
-  const extraCount = [filter.accountId, filter.personId, filter.reasonId, filter.from, filter.to].filter(
+  const extraCount = [filter.options, filter.accountId, filter.personId, filter.reasonId, filter.from, filter.to].filter(
     (v) => v !== undefined,
   ).length;
   const allOption = { value: ALL, label: t.movements.all };
@@ -90,12 +89,9 @@ function Movements({ initial }: { initial: MovementFilter }) {
 
       <ChipGroup
         label={t.movements.type}
-        options={[allOption, ...ENTRY_KINDS.map((k) => ({ value: k, label: t.entryKind[k] }))]}
-        value={kind}
-        onChange={(v) => {
-          setKind(v);
-          set({ types: v === ALL ? undefined : ENTRY_TYPES[v as EntryKind] });
-        }}
+        options={[allOption, ...SIDES.map((v) => ({ value: v, label: t.side[v] }))]}
+        value={filter.side ?? ALL}
+        onChange={(v) => set({ side: v === ALL ? undefined : (v as Side), options: undefined })}
       />
 
       <p className={`muted ${styles.count}`}>{t.movements.count(filtered.length)}</p>
@@ -132,7 +128,14 @@ function Movements({ initial }: { initial: MovementFilter }) {
             <Button
               variant="secondary"
               onClick={() =>
-                set({ accountId: undefined, personId: undefined, reasonId: undefined, from: undefined, to: undefined })
+                set({
+                  options: undefined,
+                  accountId: undefined,
+                  personId: undefined,
+                  reasonId: undefined,
+                  from: undefined,
+                  to: undefined,
+                })
               }
             >
               {t.movements.clear}
@@ -144,6 +147,20 @@ function Movements({ initial }: { initial: MovementFilter }) {
         }
       >
         <div className={styles.sheetBody}>
+          <Field label={t.movements.option}>
+            <ChipGroup
+              label={t.movements.option}
+              wrap
+              options={[
+                allOption,
+                ...(filter.side ? OPTIONS_BY_SIDE[filter.side] : SIDES.flatMap((v) => OPTIONS_BY_SIDE[v])).map(
+                  (o) => ({ value: o, label: t.entryOption[o] }),
+                ),
+              ]}
+              value={filter.options?.[0] ?? ALL}
+              onChange={(v) => set({ options: v === ALL ? undefined : [v as EntryOption] })}
+            />
+          </Field>
           <Field label={t.movements.account}>
             <ChipGroup
               label={t.movements.account}

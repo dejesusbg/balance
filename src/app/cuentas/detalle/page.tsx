@@ -69,7 +69,7 @@ function AccountDetail() {
           <Button
             size="md"
             icon={Scale}
-            onClick={() => openNew({ kind: "adjustment", accountId: account.id, amount: Math.max(0, balance) })}
+            onClick={() => openNew({ option: "adjustment", accountId: account.id, amount: Math.max(0, balance) })}
           >
             {t.accounts.adjust}
           </Button>

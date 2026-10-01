@@ -1,32 +1,36 @@
 "use client";
 
-import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, ChevronUp, Minus, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { deleteMovement, saveMovement, undo, ValidationFailed, type MovementInput } from "@/db/repo";
 import { accountBalanceAt, previewPersonBalance } from "@/domain/ledger";
 import { rankReasons } from "@/domain/query";
 import {
-  ENTRY_KINDS,
   entryOf,
-  PAYMENT_METHODS,
+  hasMethod,
+  OPTIONS_BY_SIDE,
+  SIDES,
+  sideOf,
   toMovementShape,
-  type EntryKind,
+  type EntryOption,
   type PaymentMethod,
+  type Side,
 } from "@/domain/entry";
 import { titheOf, tithingRules, tithingSuggestion } from "@/domain/tithing";
-import { REASON_GROUP_BY_TYPE, type Direction, type ID, type Movement } from "@/domain/types";
+import { REASON_GROUP_BY_TYPE, type ID, type Movement } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
 import { useFeedback } from "../Feedback";
 import { Button, ChipGroup, Field, inputClass, Toggle } from "../ui";
 import { Keypad } from "../ui/Keypad";
+import { Segmented } from "../ui/Segmented";
 import styles from "./QuickAdd.module.css";
 
 interface FormState {
-  kind: EntryKind;
-  /** Loan: "out" = I lent, "in" = they lent me. Payment: "in" = their debt shrinks. */
-  direction: Direction;
+  /** What happened; its side (＋/−/⇄) and the stored type follow from it. */
+  option: EntryOption;
+  /** "Me pagaron" / "Pagué": with money or in kind. */
   method: PaymentMethod;
   /** For adjustments: the real balance typed by the user. */
   amount: number;
@@ -49,8 +53,8 @@ export type QuickAddPreset = Partial<FormState>;
 /** Read at save time (event handlers), never during render. */
 const currentTime = () => Date.now();
 
-/** Default direction when switching to a category. */
-const defaultDirection = (kind: EntryKind): Direction => (kind === "loan" ? "out" : "in");
+const SIDE_ICON = { in: Plus, out: Minus, move: ArrowLeftRight } as const;
+const PERSON_OPTIONS: EntryOption[] = ["borrow", "repaidMe", "forgivenMe", "lend", "iPaid", "iForgave"];
 
 function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): FormState {
   const editing = editId ? data.movements.find((m) => m.id === editId) : undefined;
@@ -58,8 +62,10 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
     const fee = editing.type === "transfer" && editing.linkedId
       ? (data.movements.find((m) => m.id === editing.linkedId)?.amount ?? 0)
       : 0;
+    const { option, method } = entryOf(editing);
     return {
-      ...entryOf(editing),
+      option,
+      method,
       amount: editing.type === "adjustment" ? (editing.targetBalance ?? 0) : editing.amount,
       accountId: editing.accountId,
       toAccountId: editing.toAccountId,
@@ -76,11 +82,10 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
   const last = data.settings.lastUsed;
   const accountId =
     active.find((a) => a.id === last.accountId)?.id ?? active[0]?.id;
-  const lastKind = last.type && last.type !== "adjustment" ? entryOf({ type: last.type }).kind : "expense";
-  const kind = preset?.kind ?? lastKind;
+  // Start on the last everyday option (never on Ajuste).
+  const lastOption = last.type && last.type !== "adjustment" ? entryOf({ type: last.type }).option : "expense";
   return {
-    kind,
-    direction: defaultDirection(kind),
+    option: lastOption,
     method: "money",
     amount: 0,
     accountId,
@@ -123,17 +128,20 @@ export function QuickAddForm({
   const shape = toMovementShape(s);
   const type = shape.type;
 
-  const changeKind = (kind: EntryKind) => {
-    if (kind === s.kind) return;
-    const patch: Partial<FormState> = { kind, direction: defaultDirection(kind), method: "money" };
-    // Keep the reason only if it belongs to the new category's group.
-    const next = toMovementShape({ ...s, ...patch } as FormState).type;
+  const side = sideOf(s.option);
+
+  const changeOption = (option: EntryOption) => {
+    if (option === s.option) return;
+    const patch: Partial<FormState> = { option, method: "money" };
+    // Keep the reason only if it belongs to the new option's group.
+    const next = toMovementShape({ option, method: "money" }).type;
     if (!rankReasons(data.reasons, [], next).some((r) => r.id === s.reasonId)) patch.reasonId = undefined;
-    if (kind === "transfer" && s.toAccountId === s.accountId) {
+    if (option === "transfer" && s.toAccountId === s.accountId) {
       patch.toAccountId = data.accounts.find((a) => !a.archived && a.id !== s.accountId)?.id;
     }
     set(patch);
   };
+  const changeSide = (next: Side) => next !== side && changeOption(OPTIONS_BY_SIDE[next][0]);
 
   const activeAccounts = data.accounts.filter(
     (a) => !a.archived || a.id === s.accountId || a.id === s.toAccountId,
@@ -146,12 +154,12 @@ export function QuickAddForm({
     return current && !ranked.includes(current) && current.archived ? [...ranked, current] : ranked;
   }, [data, type, s.reasonId]);
 
-  const isAdjustment = s.kind === "adjustment";
-  const isPayment = s.kind === "payment";
-  const needsPerson = s.kind === "loan" || isPayment;
+  const isAdjustment = s.option === "adjustment";
+  const needsPerson = PERSON_OPTIONS.includes(s.option);
+  const isForgiveness = s.option === "forgivenMe" || s.option === "iForgave";
   // In-kind payments and forgiveness don't touch accounts.
   const usesAccount = type !== "settlement";
-  const canBePriorDebt = isPayment && s.method !== "forgiven";
+  const canBePriorDebt = hasMethod(s.option);
 
   // Show how the person's balance changes, and warn when a repayment
   // overshoots the recorded debt (usually an unrecorded older debt).
@@ -268,11 +276,17 @@ export function QuickAddForm({
       }}
     >
       <div className={styles.scroll}>
+        <Segmented
+          label={t.side.label}
+          options={SIDES.map((v) => ({ value: v, label: t.side[v], icon: SIDE_ICON[v] }))}
+          value={side}
+          onChange={changeSide}
+        />
         <ChipGroup
-          label={t.movements.type}
-          options={ENTRY_KINDS.map((kind) => ({ value: kind, label: t.entryKind[kind] }))}
-          value={s.kind}
-          onChange={changeKind}
+          label={t.side[side]}
+          options={OPTIONS_BY_SIDE[side].map((o) => ({ value: o, label: t.entryOption[o] }))}
+          value={s.option}
+          onChange={changeOption}
         />
 
         <div className={styles.amountBlock}>
@@ -280,9 +294,11 @@ export function QuickAddForm({
             {isAdjustment ? t.quickAdd.realBalance : t.quickAdd.amount}
           </div>
           <output
-            className={`${styles.amount} ${s.amount === 0 ? styles.amountZero : ""}`}
+            className={`${styles.amount} ${s.amount === 0 ? styles.amountZero : side === "in" ? "money-in" : ""}`}
             aria-live="polite"
           >
+            {/* ＋ for what benefits me, − for what benefits others. */}
+            {!isAdjustment && s.amount > 0 && side !== "move" ? (side === "in" ? "+" : "−") : ""}
             {data.fmt(s.amount, { reveal: true })}
           </output>
           {adjustment && (
@@ -293,6 +309,35 @@ export function QuickAddForm({
             </div>
           )}
         </div>
+
+        {needsPerson && (
+          <Field label={t.quickAdd.person}>
+            {activePeople.length ? (
+              <ChipGroup
+                label={t.quickAdd.person}
+                options={activePeople.map((p) => ({ value: p.id, label: p.name }))}
+                value={s.personId}
+                onChange={(personId) => set({ personId })}
+              />
+            ) : (
+              <p className={styles.empty}>{t.quickAdd.noPeople}</p>
+            )}
+          </Field>
+        )}
+
+        {hasMethod(s.option) && (
+          <Field label={t.paymentMethod.label}>
+            <ChipGroup
+              label={t.paymentMethod.label}
+              options={(["money", "goods"] as const).map((m) => ({ value: m, label: t.paymentMethod[m] }))}
+              value={s.method}
+              onChange={(method) => set({ method })}
+            />
+            {s.method === "goods" && <span className={styles.empty}>{t.paymentMethod.goodsHint}</span>}
+          </Field>
+        )}
+
+        {isForgiveness && <p className={styles.empty}>{t.forgivenHint}</p>}
 
         {usesAccount && (
           <Field label={type === "transfer" ? t.quickAdd.fromAccount : t.quickAdd.account}>
@@ -319,58 +364,6 @@ export function QuickAddForm({
               options={accountOptions.filter((o) => o.value !== s.accountId)}
               value={s.toAccountId}
               onChange={(toAccountId) => set({ toAccountId })}
-            />
-          </Field>
-        )}
-
-        {needsPerson && (
-          <Field label={t.quickAdd.person}>
-            {activePeople.length ? (
-              <ChipGroup
-                label={t.quickAdd.person}
-                options={activePeople.map((p) => ({ value: p.id, label: p.name }))}
-                value={s.personId}
-                onChange={(personId) => set({ personId })}
-              />
-            ) : (
-              <p className={styles.empty}>{t.quickAdd.noPeople}</p>
-            )}
-          </Field>
-        )}
-
-        {s.kind === "loan" && (
-          <Field label={t.loanDirection.label}>
-            <ChipGroup
-              label={t.loanDirection.label}
-              options={(["out", "in"] as const).map((d) => ({ value: d, label: t.loanDirection[d] }))}
-              value={s.direction}
-              onChange={(direction) => set({ direction })}
-            />
-          </Field>
-        )}
-
-        {isPayment && (
-          <Field label={t.paymentMethod.label}>
-            <ChipGroup
-              label={t.paymentMethod.label}
-              options={PAYMENT_METHODS.map((m) => ({ value: m, label: t.paymentMethod[m] }))}
-              value={s.method}
-              onChange={(method) => set({ method, ...(method === "forgiven" ? { priorDebt: false } : {}) })}
-            />
-            {t.paymentHint[s.method] && <span className={styles.empty}>{t.paymentHint[s.method]}</span>}
-          </Field>
-        )}
-
-        {isPayment && (
-          <Field label={t.paymentDirection.label}>
-            <ChipGroup
-              label={t.paymentDirection.label}
-              options={(["in", "out"] as const).map((d) => ({
-                value: d,
-                label: t.paymentDirection[s.method][d],
-              }))}
-              value={s.direction}
-              onChange={(direction) => set({ direction })}
             />
           </Field>
         )}

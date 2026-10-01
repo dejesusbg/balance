@@ -7,6 +7,7 @@ import {
   HandHeart,
   HeartHandshake,
   Pencil,
+  Sparkles,
   Undo2,
   Wallet,
 } from "lucide-react";
@@ -61,17 +62,15 @@ function PersonDetail() {
   const stateText = (n: number) =>
     n === 0 ? t.people.state(0) : `${t.people.state(Math.sign(n))} ${data.fmt(Math.abs(n))}`;
 
-  // En especie is picked inside the form ("¿Cómo se saldó?").
+  // One circle per thing that can happen with a person; "En especie" is
+  // picked inside the form ("¿Cómo?").
   const actions: { icon: typeof HandCoins; label: string; preset: QuickAddPreset; brand?: boolean }[] = [
-    { icon: HandCoins, label: t.people.actions.lend, preset: { kind: "loan", direction: "out" }, brand: true },
-    { icon: HandHeart, label: t.people.actions.borrow, preset: { kind: "loan", direction: "in" } },
-    { icon: Undo2, label: t.people.actions.paidMe, preset: { kind: "payment", method: "money", direction: "in" } },
-    { icon: Wallet, label: t.people.actions.iPaid, preset: { kind: "payment", method: "money", direction: "out" } },
-    {
-      icon: HeartHandshake,
-      label: t.people.actions.forgive,
-      preset: { kind: "payment", method: "forgiven", direction: "in" },
-    },
+    { icon: HandCoins, label: t.entryOption.lend, preset: { option: "lend" }, brand: true },
+    { icon: HandHeart, label: t.entryOption.borrow, preset: { option: "borrow" } },
+    { icon: Undo2, label: t.entryOption.repaidMe, preset: { option: "repaidMe" } },
+    { icon: Wallet, label: t.entryOption.iPaid, preset: { option: "iPaid" } },
+    { icon: HeartHandshake, label: t.entryOption.iForgave, preset: { option: "iForgave" } },
+    { icon: Sparkles, label: t.entryOption.forgivenMe, preset: { option: "forgivenMe" } },
   ];
   const lotById = new Map(summary.lots.map((l) => [l.movementId, l]));
 

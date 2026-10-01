@@ -1,0 +1,28 @@
+.segmented {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--fill-neutral);
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--fw-semibold) 15px/1 var(--font-sans);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.segment[aria-checked="true"] {
+  background: var(--brand);
+  color: var(--text-on-brand);
+}

@@ -1,11 +1,15 @@
 // Pure helpers for listing, filtering and ranking movements.
 
+import { entryOf, type EntryOption, type Side } from "./entry";
 import { movementEffect } from "./ledger";
 import type { ID, Movement, MovementType, Reason } from "./types";
 import { REASON_GROUP_BY_TYPE } from "./types";
 
 export interface MovementFilter {
-  types?: MovementType[];
+  /** Who benefits: ＋ Recibo / − Doy / ⇄ Muevo. */
+  side?: Side;
+  /** Specific quick-add options (e.g. only "Me pagaron"). */
+  options?: EntryOption[];
   accountId?: ID;
   personId?: ID;
   reasonId?: ID;
@@ -26,7 +30,11 @@ export function filterMovements(
 ): Movement[] {
   const text = f.text ? normalize(f.text) : "";
   return movements.filter((m) => {
-    if (f.types?.length && !f.types.includes(m.type)) return false;
+    if (f.side || f.options?.length) {
+      const e = entryOf(m);
+      if (f.side && e.side !== f.side) return false;
+      if (f.options?.length && !f.options.includes(e.option)) return false;
+    }
     if (f.accountId && m.accountId !== f.accountId && m.toAccountId !== f.accountId)
       return false;
     if (f.personId && m.personId !== f.personId) return false;

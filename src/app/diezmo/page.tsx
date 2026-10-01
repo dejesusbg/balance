@@ -45,7 +45,7 @@ export default function TithingPage() {
           icon={HandHeart}
           onClick={() =>
             openNew({
-              kind: "expense",
+              option: "expense",
               reasonId: rules.tithingReasonId,
               amount: Math.max(0, summary.pending),
             })

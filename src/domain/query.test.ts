@@ -44,12 +44,25 @@ describe("filterMovements", () => {
   });
 
   it("filters by type, account (either side of a transfer), person and reason", () => {
-    expect(filterMovements(list, { types: ["income", "lend"] })).toHaveLength(2);
+    expect(filterMovements(list, { options: ["income", "lend"] })).toHaveLength(2);
     expect(filterMovements(list, { accountId: "cash" }).map((m) => m.type)).toEqual([
       "transfer",
     ]);
     expect(filterMovements(list, { personId: "mom" })).toHaveLength(1);
     expect(filterMovements(list, { reasonId: "food" })).toHaveLength(1);
+  });
+
+  it("filters by who benefits, splitting repayments by direction", () => {
+    const pays = [
+      mv("repayment", { personId: "mom", direction: "in" }),
+      mv("repayment", { personId: "mom", direction: "out" }),
+      mv("settlement", { accountId: undefined, personId: "mom", direction: "out", forgiven: true }),
+    ];
+    const ids = (f: Parameters<typeof filterMovements>[1]) => filterMovements(pays, f).map((m) => m.id);
+    expect(ids({ side: "in" })).toEqual([pays[0].id, pays[2].id]);
+    expect(ids({ side: "out" })).toEqual([pays[1].id]);
+    expect(ids({ options: ["forgivenMe"] })).toEqual([pays[2].id]);
+    expect(filterMovements(list, { side: "move" }).map((m) => m.type)).toEqual(["transfer"]);
   });
 
   it("searches notes ignoring case and accents", () => {

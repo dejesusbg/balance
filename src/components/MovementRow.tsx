@@ -54,11 +54,12 @@ export function describeMovement(m: Movement, data: AppData) {
       break;
     case "repayment":
     case "settlement": {
-      // Old in-kind settlements may still carry a reason; it's ignored.
-      const { method, direction } = entryOf(m);
-      title = t.paymentTitle[method];
+      // Old settlements may still carry a reason; it's ignored.
+      const { option, method } = entryOf(m);
+      title = t.entryOption[option];
       context = [
-        `${t.paymentDirection[method][direction]} · ${person ?? ""}`,
+        person,
+        method === "goods" ? t.rowTag.goods : undefined,
         m.priorDebt ? t.movements.priorDebt : undefined,
         account,
       ]
@@ -67,19 +68,20 @@ export function describeMovement(m: Movement, data: AppData) {
       break;
     }
     case "lend":
-    case "borrow":
-      title = reason ?? t.entryKind.loan;
-      context = [`${t.loanDirection[m.type === "lend" ? "out" : "in"]} · ${person ?? ""}`, account]
-        .filter(Boolean)
-        .join(" · ");
+    case "borrow": {
+      const label = t.entryOption[entryOf(m).option];
+      title = reason ?? label;
+      context = [reason ? label : undefined, person, account].filter(Boolean).join(" · ");
       break;
+    }
     default:
       title = reason ?? t.movementType[m.type];
       context = account;
   }
 
-  const flow = flowOf(m);
-  // Settlements don't touch accounts: show their face value, neutral.
+  // Movements without money (in kind, forgiveness) read by who benefits.
+  const side = entryOf(m).side;
+  const flow = m.type === "settlement" ? (side === "in" ? "in" : "out") : flowOf(m);
   const shown = m.type === "adjustment" ? m.amount : flow === "out" ? -m.amount : m.amount;
   return { title, context, flow, shown };
 }

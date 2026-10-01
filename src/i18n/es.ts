@@ -23,42 +23,40 @@ export const es = {
     borrow: "Me prestaron",
     adjustment: "Ajuste",
   },
-  /** Quick-add categories (see domain/entry.ts). */
-  entryKind: {
-    expense: "Gasto",
+  /** Quick-add groups by who benefits (see domain/entry.ts). */
+  side: {
+    label: "¿Quién sale ganando?",
+    in: "Recibo",
+    out: "Doy",
+    move: "Muevo",
+    hint: {
+      in: "Ingresos, préstamos que te hacen, pagos que recibes o deudas que te perdonan.",
+      out: "Gastos, préstamos que haces, pagos que haces o deudas que perdonas.",
+      move: "Entre tus cuentas, o corregir un saldo. Tu total no cambia.",
+    },
+  },
+  entryOption: {
     income: "Ingreso",
-    transfer: "Transferir",
-    loan: "Préstamo",
-    payment: "Saldar deuda",
+    borrow: "Me prestaron",
+    repaidMe: "Me pagaron",
+    forgivenMe: "Me perdonaron",
+    expense: "Gasto",
+    lend: "Presté",
+    iPaid: "Pagué",
+    iForgave: "Perdoné",
+    transfer: "Transferencia",
     adjustment: "Ajuste",
   },
-  loanDirection: {
-    label: "¿Quién prestó?",
-    out: "Yo le presté",
-    in: "Me prestó",
-  },
   paymentMethod: {
-    label: "¿Cómo se saldó?",
+    label: "¿Cómo?",
     money: "Dinero",
     goods: "En especie",
-    forgiven: "Perdón",
+    goodsHint: "Con algo que no es dinero (ej. una invitación a almorzar). No mueve tus cuentas.",
   },
-  paymentHint: {
-    money: "",
-    goods: "Pagó con algo que no es dinero (ej. te invitó a almorzar). No mueve tus cuentas.",
-    forgiven: "La deuda se cancela sin que nadie pague. No mueve tus cuentas.",
-  },
-  /** Direction labels per method. "in" = their debt shrinks, "out" = mine. */
-  paymentDirection: {
-    label: "¿Quién?",
-    money: { in: "Me pagó", out: "Yo le pagué" },
-    goods: { in: "Me pagó en especie", out: "Le pagué en especie" },
-    forgiven: { in: "Le perdoné", out: "Me perdonó" },
-  },
-  paymentTitle: {
-    money: "Pago de deuda",
-    goods: "Pago en especie",
-    forgiven: "Deuda perdonada",
+  forgivenHint: "La deuda se cancela sin que nadie pague. No mueve tus cuentas.",
+  /** Row context for debt movements, e.g. "en especie". */
+  rowTag: {
+    goods: "en especie",
   },
   reasonGroup: {
     income: "Ingresos",
@@ -124,6 +122,7 @@ export const es = {
     clear: "Limpiar",
     all: "Todos",
     type: "Tipo",
+    option: "Qué pasó",
     account: "Cuenta",
     person: "Persona",
     reason: "Motivo",
@@ -189,13 +188,6 @@ export const es = {
     history: "Historial",
     noHistory: "Sin movimientos con esta persona.",
     lastActivity: (d: string) => `Último movimiento: ${d}`,
-    actions: {
-      lend: "Prestar",
-      borrow: "Me prestó",
-      paidMe: "Me pagó",
-      iPaid: "Le pagué",
-      forgive: "Perdonar",
-    },
     summary: {
       title: "Resumen",
       opening: "Saldo inicial",
