@@ -55,6 +55,23 @@
   font-weight: var(--fw-semibold);
 }
 
+.prior {
+  margin-top: var(--space-16);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.prior .summary {
+  margin-top: 0;
+}
+
+.prior p {
+  margin: 0 0 var(--space-8);
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+}
+
 .reasons {
   list-style: none;
   margin: var(--space-12) 0 0;

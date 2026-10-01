@@ -42,16 +42,17 @@ export function movementEffect(m: Movement): MovementEffect {
     case "repayment":
       // "in": they pay me, money enters my account and their debt shrinks.
       // "out": I pay them, money leaves my account and my debt shrinks.
+      // A prior (pre-app) debt moves the account but not the person balance.
       if (m.direction === "out") {
         add(m.accountId, -a);
-        return { accounts, person: personDelta(m, a) };
+        return { accounts, person: personDelta(m, m.priorDebt ? 0 : a) };
       }
       add(m.accountId, a);
-      return { accounts, person: personDelta(m, -a) };
+      return { accounts, person: personDelta(m, m.priorDebt ? 0 : -a) };
     case "settlement":
       return {
         accounts,
-        person: personDelta(m, m.direction === "out" ? a : -a),
+        person: personDelta(m, m.priorDebt ? 0 : m.direction === "out" ? a : -a),
       };
   }
 }
@@ -210,7 +211,8 @@ export function previewPersonBalance(
   const before = personBalances([person], others).get(person.id)!;
   const eff = movementEffect(draft).person;
   const after = before + (eff?.id === person.id ? eff.delta : 0);
-  const settles = draft.type === "repayment" || draft.type === "settlement";
+  const settles =
+    (draft.type === "repayment" || draft.type === "settlement") && !draft.priorDebt;
   const overshoots = settles && after !== 0 && Math.sign(after) !== Math.sign(before);
   return { before, after, overshoots };
 }

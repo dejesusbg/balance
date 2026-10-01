@@ -54,6 +54,15 @@ describe("personSummary", () => {
     expect(s.balance).toBe(10_000 + 70_000 - 5_000 - 30_000 + 5_000 - 12_000 + 1_000);
   });
 
+  it("counts prior-debt payments apart, without touching the balance", () => {
+    const prior = [
+      mv("repayment", 30_000, { direction: "in", priorDebt: true, reasonId: "lunch" }),
+      mv("repayment", 4_000, { direction: "out", priorDebt: true }),
+    ];
+    const s = personSummary(person("dad"), prior);
+    expect(s).toMatchObject({ balance: 0, paidMe: 0, priorIn: 30_000, priorOut: 4_000, byReason: [] });
+  });
+
   it("breaks the balance down by reason", () => {
     const s = personSummary(dad, movements);
     expect(s.byReason).toEqual([

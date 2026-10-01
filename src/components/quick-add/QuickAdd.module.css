@@ -94,6 +94,37 @@
   margin: var(--space-4) 0 0;
 }
 
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--fill-neutral);
+  cursor: pointer;
+}
+
+.toggle input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--brand);
+}
+
+.toggle > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.toggle strong {
+  font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
+  color: var(--text-primary);
+}
+
 .empty {
   margin: 0;
   color: var(--text-secondary);

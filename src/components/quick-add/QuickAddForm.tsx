@@ -39,6 +39,8 @@ interface FormState {
   /** null = "now" at save time. */
   date: number | null;
   fee: number;
+  /** Repayment/settlement of a debt from before the app. */
+  priorDebt: boolean;
 }
 
 export type QuickAddPreset = Partial<FormState>;
@@ -60,6 +62,7 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
       note: editing.note,
       date: editing.date,
       fee,
+      priorDebt: Boolean(editing.priorDebt),
     };
   }
   const active = data.accounts.filter((a) => !a.archived);
@@ -76,6 +79,7 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
     note: "",
     date: null,
     fee: 0,
+    priorDebt: false,
     ...preset,
   };
 }
@@ -146,12 +150,13 @@ export function QuickAddForm({
       accountId: s.accountId,
       personId: s.personId,
       direction: s.direction,
+      priorDebt: needsDirection && s.priorDebt,
       note: "",
       createdAt: 0,
       updatedAt: 0,
     };
     return { name: person.name, ...previewPersonBalance(person, data.movements, draft, editId) };
-  }, [needsPerson, s, data, editId, openedAt]);
+  }, [needsPerson, needsDirection, s, data, editId, openedAt]);
 
   // Adjustment: compare the typed real balance with what the app computes.
   const adjustment = useMemo(() => {
@@ -175,6 +180,7 @@ export function QuickAddForm({
       reasonId: s.reasonId,
       direction: needsDirection ? s.direction : undefined,
       targetBalance: isAdjustment ? s.amount : undefined,
+      priorDebt: needsDirection && s.priorDebt,
       note: s.note,
       fee: s.type === "transfer" ? s.fee : 0,
     };
@@ -312,6 +318,20 @@ export function QuickAddForm({
             </strong>
             {personPreview.overshoots && <p>{t.quickAdd.overshoot(personPreview.name)}</p>}
           </div>
+        )}
+
+        {needsDirection && personPreview && (personPreview.overshoots || s.priorDebt) && (
+          <label className={styles.toggle}>
+            <input
+              type="checkbox"
+              checked={s.priorDebt}
+              onChange={(e) => set({ priorDebt: e.target.checked })}
+            />
+            <span>
+              <strong>{t.quickAdd.priorDebt}</strong>
+              <span>{t.quickAdd.priorDebtHint(personPreview.name)}</span>
+            </span>
+          </label>
         )}
 
         {s.type !== "transfer" && !isAdjustment && (

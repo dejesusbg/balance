@@ -329,3 +329,37 @@ describe("previewPersonBalance", () => {
     });
   });
 });
+
+describe("prior (pre-app) debts", () => {
+  const dad = person("dad");
+  const pay = (direction: "in" | "out", type: MovementType = "repayment") =>
+    mv(type, 30_000, {
+      accountId: type === "settlement" ? undefined : "nu",
+      personId: "dad",
+      direction,
+      priorDebt: true,
+    });
+
+  it("money moves, but the person's balance does not", () => {
+    expect(movementEffect(pay("in"))).toEqual({
+      accounts: { nu: 30_000 },
+      person: { id: "dad", delta: 0 },
+    });
+    expect(movementEffect(pay("out")).accounts).toEqual({ nu: -30_000 });
+    expect(movementEffect(pay("in", "settlement")).person!.delta).toBe(0);
+    const ms = [pay("in")];
+    expect(personBalances([dad], ms).get("dad")).toBe(0);
+    expect(accountBalances([nu], ms).get("nu")).toBe(100_000 + 30_000);
+  });
+
+  it("is never flagged as overshooting and shows in history without changing it", () => {
+    expect(previewPersonBalance(dad, [], pay("in"))).toEqual({
+      before: 0,
+      after: 0,
+      overshoots: false,
+    });
+    const h = personHistory(dad, [pay("in")]);
+    expect(h).toHaveLength(1);
+    expect(h[0]).toMatchObject({ delta: 0, balance: 0 });
+  });
+});

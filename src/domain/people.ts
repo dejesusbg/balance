@@ -18,6 +18,9 @@ export interface PersonSummary {
   kindIn: Amount;
   /** Value I gave them in kind (settlement out). */
   kindOut: Amount;
+  /** Payments/settlements of debts from before the app (balance unchanged). */
+  priorIn: Amount;
+  priorOut: Amount;
   /** Per reason: how much it raised and lowered the balance. */
   byReason: { reasonId: ID | undefined; up: Amount; down: Amount }[];
 }
@@ -32,6 +35,8 @@ export function personSummary(person: Person, movements: Movement[]): PersonSumm
     iPaid: 0,
     kindIn: 0,
     kindOut: 0,
+    priorIn: 0,
+    priorOut: 0,
     byReason: [],
   };
   const reasons = new Map<ID | undefined, { up: Amount; down: Amount }>();
@@ -41,6 +46,11 @@ export function personSummary(person: Person, movements: Movement[]): PersonSumm
     if (!eff || eff.id !== person.id) continue;
     s.balance += eff.delta;
     const a = m.amount;
+    if (m.priorDebt) {
+      if (m.direction === "out") s.priorOut += a;
+      else s.priorIn += a;
+      continue;
+    }
     if (m.type === "lend") s.lent += a;
     else if (m.type === "borrow") s.borrowed += a;
     else if (m.type === "repayment") {

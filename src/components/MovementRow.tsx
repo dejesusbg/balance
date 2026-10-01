@@ -53,7 +53,11 @@ export function describeMovement(m: Movement, data: AppData) {
     case "repayment":
     case "settlement":
       title = reason ?? t.movementType[m.type];
-      context = [`${t.direction[m.type][m.direction ?? "in"]} · ${person ?? ""}`, account]
+      context = [
+        `${t.direction[m.type][m.direction ?? "in"]} · ${person ?? ""}`,
+        m.priorDebt ? t.movements.priorDebt : undefined,
+        account,
+      ]
         .filter(Boolean)
         .join(" · ");
       break;

@@ -88,6 +88,12 @@ export interface Movement {
   linkedId?: ID;
   /** Adjustment only: the real balance typed by the user. */
   targetBalance?: Amount;
+  /**
+   * Repayment/settlement only: settles a debt from before the app existed.
+   * Accounts move as usual, but the person's balance doesn't change,
+   * because that debt was never recorded.
+   */
+  priorDebt?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

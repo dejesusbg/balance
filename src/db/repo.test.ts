@@ -80,6 +80,16 @@ describe("saveMovement", () => {
     expect(m.toAccountId).toBeUndefined();
   });
 
+  it("keeps priorDebt only on repayments and settlements", async () => {
+    const base = { amount: 30_000, date: 1, accountId: nu, personId: mom, reasonId: lunch, note: "", priorDebt: true };
+    const { id: a } = await saveMovement({ ...base, type: "repayment", direction: "in" }, undefined, db);
+    const { id: b } = await saveMovement({ ...base, type: "lend" }, undefined, db);
+    expect((await db.movements.get(a))!.priorDebt).toBe(true);
+    expect((await db.movements.get(b))!.priorDebt).toBeUndefined();
+    const pb = personBalances(await db.people.toArray(), await db.movements.toArray());
+    expect(pb.get(mom)).toBe(30_000);
+  });
+
   it("remembers the last type, account and reason", async () => {
     await saveMovement(
       { type: "expense", amount: 5_000, date: 1, accountId: cash, reasonId: food, note: "" },

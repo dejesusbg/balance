@@ -71,6 +71,11 @@ function PersonDetail() {
   ] as const;
 
   // Signed contributions, in the order money usually flows.
+  const priorLines = [
+    { label: t.people.summary.priorIn, value: summary.priorIn },
+    { label: t.people.summary.priorOut, value: summary.priorOut },
+  ].filter((l) => l.value !== 0);
+
   const lines = [
     { label: t.people.summary.opening, value: summary.opening },
     { label: t.people.summary.lent, value: summary.lent },
@@ -131,7 +136,7 @@ function PersonDetail() {
         </div>
       )}
 
-      {lines.length > 0 && (
+      {(lines.length > 0 || priorLines.length > 0) && (
         <section className={styles.section}>
           <h2 className="section-title">{t.people.summary.title}</h2>
           <dl className={styles.summary}>
@@ -146,6 +151,19 @@ function PersonDetail() {
               <dd className="money">{stateText(summary.balance)}</dd>
             </div>
           </dl>
+          {priorLines.length > 0 && (
+            <div className={styles.prior}>
+              <dl className={styles.summary}>
+                {priorLines.map((l) => (
+                  <div key={l.label} className={styles.line}>
+                    <dt>{l.label}</dt>
+                    <dd className="money">{data.fmt(l.value)}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p>{t.people.summary.priorHint}</p>
+            </div>
+          )}
         </section>
       )}
 

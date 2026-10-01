@@ -255,7 +255,10 @@ function clean(d: MovementDraft): MovementDraft {
   if (d.type !== "settlement") out.accountId = d.accountId;
   if (d.type === "transfer") out.toAccountId = d.toAccountId;
   if (["lend", "repayment", "settlement", "borrow"].includes(d.type)) out.personId = d.personId;
-  if (d.type === "repayment" || d.type === "settlement") out.direction = d.direction;
+  if (d.type === "repayment" || d.type === "settlement") {
+    out.direction = d.direction;
+    if (d.priorDebt) out.priorDebt = true;
+  }
   if (d.reasonId && d.type !== "transfer" && d.type !== "adjustment") out.reasonId = d.reasonId;
   if (d.type === "adjustment" && d.targetBalance !== undefined) out.targetBalance = d.targetBalance;
   return out;

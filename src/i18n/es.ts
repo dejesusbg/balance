@@ -89,7 +89,10 @@ export const es = {
     personState: (sign: number, amount: string) =>
       sign > 0 ? `te debe ${amount}` : sign < 0 ? `le debes ${amount}` : "a paz y salvo",
     overshoot: (name: string) =>
-      `Esto supera la deuda registrada con ${name}. Si la deuda venía de antes, ponla como saldo inicial en Personas → ${name} → Editar.`,
+      `Esto es más de lo que ${name} tiene registrado. ¿Es una deuda de antes de usar la app?`,
+    priorDebt: "Deuda de antes de usar la app",
+    priorDebtHint: (name: string) =>
+      `El dinero se registra en la cuenta, pero el saldo con ${name} no cambia.`,
   },
   movements: {
     title: "Movimientos",
@@ -108,6 +111,7 @@ export const es = {
     today: "Hoy",
     yesterday: "Ayer",
     adjustTo: (v: string) => `Ajuste a ${v}`,
+    priorDebt: "deuda anterior",
     showMore: "Mostrar más",
   },
   accounts: {
@@ -179,6 +183,9 @@ export const es = {
       borrowed: "Me prestó",
       iPaid: "Le pagué",
       kindOut: "Le compensé en especie",
+      priorIn: "Me pagó deudas de antes de la app",
+      priorOut: "Le pagué deudas de antes de la app",
+      priorHint: "No cambian el saldo: esas deudas no estaban registradas.",
       balance: "Saldo",
     },
     byReason: "Por motivo",
