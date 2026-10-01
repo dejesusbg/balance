@@ -23,7 +23,7 @@ export default function Home() {
   const sum = totals(accounts, people, movements);
   const balances = accountBalances(accounts, movements);
   const hidden = Boolean(settings.hideAmounts);
-  const tithing = tithingSummary(movements, tithingRules(data.reasons, settings.tithingRate));
+  const tithing = tithingSummary(movements, tithingRules(data.reasons));
 
   return (
     <>
@@ -51,7 +51,7 @@ export default function Home() {
         </div>
       </section>
 
-      {settings.tithingRate > 0 && (
+      {(tithing.due > 0 || tithing.paid > 0) && (
         <Link href="/diezmo" className={styles.tithing}>
           <HandHeart size={22} strokeWidth={1.75} aria-hidden />
           <span>{t.tithing.pending}</span>

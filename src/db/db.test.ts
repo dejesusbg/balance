@@ -1,4 +1,5 @@
 import "fake-indexeddb/auto";
+import Dexie from "dexie";
 import { describe, expect, it } from "vitest";
 import { accountBalances, previewPersonBalance } from "@/domain/ledger";
 import { validateMovement } from "@/domain/validate";
@@ -47,6 +48,40 @@ describe("database", () => {
       expect(previewPersonBalance(p, sorted.slice(0, i), m).overshoots).toBe(false);
     });
     expect(sorted.some((m) => m.type === "repayment")).toBe(true);
+    db.close();
+  });
+
+  it("migrates v1 → v2: the tithing flag moves from income reasons to each income", async () => {
+    const name = "test-migrate-v2";
+    const v1 = new Dexie(name);
+    v1.version(1).stores({
+      accounts: "id, order",
+      people: "id, order",
+      reasons: "id, group, order",
+      movements: "id, date, type, accountId, toAccountId, personId, reasonId",
+      settings: "key",
+    });
+    await v1.open();
+    await v1.table("reasons").bulkAdd([
+      { id: "work", group: "income", countsForTithing: true },
+      { id: "gift", group: "income", countsForTithing: false },
+    ]);
+    await v1.table("movements").bulkAdd([
+      { id: "a", type: "income", reasonId: "work", amount: 100, date: 1 },
+      { id: "b", type: "income", reasonId: "gift", amount: 100, date: 2 },
+      { id: "c", type: "expense", reasonId: "work", amount: 100, date: 3 },
+    ]);
+    await v1.table("settings").add({ key: "settings", tithingRate: 0.1, lastUsed: {} });
+    v1.close();
+
+    const db = new BalanceDB(name);
+    await db.open();
+    expect(db.verno).toBe(2);
+    expect((await db.movements.get("a"))!.tithe).toBe(true);
+    expect((await db.movements.get("b"))!.tithe).toBeUndefined();
+    expect((await db.movements.get("c"))!.tithe).toBeUndefined();
+    expect(await db.reasons.get("work")).not.toHaveProperty("countsForTithing");
+    expect(await db.settings.get("settings")).not.toHaveProperty("tithingRate");
     db.close();
   });
 });

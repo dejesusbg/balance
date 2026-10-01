@@ -245,8 +245,6 @@ export async function createReason(
     order: Math.max(-1, ...inGroup.map((r) => r.order)) + 1,
     archived: false,
     essential: false,
-    // New income reasons count toward tithing by default, like the seeds.
-    countsForTithing: group === "income",
     createdAt: Date.now(),
   };
   await db.reasons.add(reason);
@@ -255,7 +253,7 @@ export async function createReason(
 
 export async function updateReason(
   id: ID,
-  patch: Partial<Pick<Reason, "name" | "essential" | "countsForTithing" | "archived">>,
+  patch: Partial<Pick<Reason, "name" | "essential" | "archived">>,
   db: BalanceDB = getDB(),
 ) {
   const reason = await db.reasons.get(id);
@@ -304,6 +302,7 @@ async function rememberLastUsed(db: BalanceDB, m: Movement) {
       type: m.type,
       accountId: m.accountId ?? settings.lastUsed.accountId,
       reasonByType,
+      tithe: m.type === "income" ? Boolean(m.tithe) : settings.lastUsed.tithe,
     },
   });
 }
@@ -328,5 +327,6 @@ function clean(d: MovementDraft): MovementDraft {
   }
   if (d.reasonId && REASON_GROUP_BY_TYPE[d.type]) out.reasonId = d.reasonId;
   if (d.type === "adjustment" && d.targetBalance !== undefined) out.targetBalance = d.targetBalance;
+  if (d.type === "income" && d.tithe) out.tithe = true;
   return out;
 }

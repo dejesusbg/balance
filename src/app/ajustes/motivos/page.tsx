@@ -38,9 +38,6 @@ export default function ReasonsPage() {
           {r.role === "tithing" && <Badge>{t.reasons.builtInTithing}</Badge>}
           {r.role === "fee" && <Badge>{t.reasons.builtInFee}</Badge>}
           {r.group === "expense" && r.essential && <span className={styles.tag}>{t.reasons.essential}</span>}
-          {r.group === "income" && r.countsForTithing && (
-            <span className={styles.tag}>{t.reasons.builtInTithing}</span>
-          )}
           <span>{t.reasons.uses(uses.get(r.id) ?? 0)}</span>
         </span>
       </button>
@@ -127,14 +124,10 @@ function ReasonForm({
   const g = reason?.group ?? group;
   const [name, setName] = useState(reason?.name ?? "");
   const [essential, setEssential] = useState(reason?.essential ?? false);
-  const [tithing, setTithing] = useState(reason?.countsForTithing ?? g === "income");
 
   async function submit() {
     if (!name.trim()) return;
-    const flags = {
-      ...(g === "expense" ? { essential } : {}),
-      ...(g === "income" ? { countsForTithing: tithing } : {}),
-    };
+    const flags = g === "expense" ? { essential } : {};
     if (reason) await updateReason(reason.id, { name, ...flags });
     else await updateReason(await createReason(g, name), flags);
     onDone();
@@ -174,9 +167,6 @@ function ReasonForm({
           title={t.reasons.essential}
           hint={t.reasons.essentialHint}
         />
-      )}
-      {g === "income" && (
-        <Toggle checked={tithing} onChange={setTithing} title={t.reasons.tithing} hint={t.reasons.tithingHint} />
       )}
 
       <Button type="submit" full disabled={!name.trim()}>

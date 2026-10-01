@@ -9,7 +9,6 @@ const reason = (id: string, group: Reason["group"]): Reason => ({
   order: 0,
   archived: false,
   essential: false,
-  countsForTithing: false,
   createdAt: 0,
 });
 const reasons = new Map(

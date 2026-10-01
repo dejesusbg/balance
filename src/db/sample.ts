@@ -84,6 +84,7 @@ export function generateSampleMovements(opts: {
         date,
         accountId: isGift ? wallet.id : main.id,
         reasonId: reason("income", isGift ? "Regalo" : "Tarea/Trabajo"),
+        tithe: !isGift,
         note: isGift ? "Regalo" : pick(["Proyecto web", "Tarea", "Clases", "Freelance"]),
       });
       if (!isGift && r() < 0.8) {

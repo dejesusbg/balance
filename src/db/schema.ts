@@ -7,7 +7,7 @@ import { buildBaseSeed } from "./seed";
  * `this.version(n).stores(...).upgrade(...)` block below. Exported backups
  * carry this number so imports can be migrated too (see backup.ts).
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export class BalanceDB extends Dexie {
   accounts!: EntityTable<Account, "id">;
@@ -28,10 +28,29 @@ export class BalanceDB extends Dexie {
       settings: "key",
     });
 
-    // Example for the future:
-    // this.version(2).stores({...}).upgrade(async (tx) => {
-    //   await tx.table("movements").toCollection().modify((m) => { ... });
-    // });
+    // v2: "Añadir al diezmo" moves from the income reason to each income.
+    // Existing incomes keep what their reason said; the reason flag goes away.
+    this.version(2)
+      .stores({})
+      .upgrade(async (tx) => {
+        const reasons = await tx.table("reasons").toArray();
+        const counted = new Set(reasons.filter((r) => r.countsForTithing).map((r) => r.id));
+        await tx
+          .table("movements")
+          .where("type")
+          .equals("income")
+          .modify((m) => {
+            if (m.reasonId && counted.has(m.reasonId)) m.tithe = true;
+          });
+        await tx.table("reasons").toCollection().modify((r) => {
+          delete r.countsForTithing;
+        });
+        await tx.table("settings").toCollection().modify((s) => {
+          delete s.tithingRate;
+        });
+      });
+
+    // Next schema change: add this.version(3) with its own upgrade.
 
     // First run: seed accounts, people, reasons and settings.
     this.on("populate", async (tx) => {

@@ -28,7 +28,6 @@ const reason = (id: string, group: Reason["group"], order: number, archived = fa
   order,
   archived,
   essential: false,
-  countsForTithing: false,
   createdAt: 0,
 });
 

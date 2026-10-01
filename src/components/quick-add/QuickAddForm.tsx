@@ -13,7 +13,7 @@ import {
   type EntryKind,
   type PaymentMethod,
 } from "@/domain/entry";
-import { tithingRules, tithingSuggestion } from "@/domain/tithing";
+import { titheOf, tithingRules, tithingSuggestion } from "@/domain/tithing";
 import { REASON_GROUP_BY_TYPE, type Direction, type ID, type Movement } from "@/domain/types";
 import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
@@ -40,6 +40,8 @@ interface FormState {
   fee: number;
   /** Payment of a debt from before the app. */
   priorDebt: boolean;
+  /** Income: "Añadir al diezmo". */
+  tithe: boolean;
 }
 
 export type QuickAddPreset = Partial<FormState>;
@@ -67,6 +69,7 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
       date: editing.date,
       fee,
       priorDebt: Boolean(editing.priorDebt),
+      tithe: Boolean(editing.tithe),
     };
   }
   const active = data.accounts.filter((a) => !a.archived);
@@ -86,6 +89,8 @@ function initialState(data: AppData, editId?: ID, preset?: QuickAddPreset): Form
     date: null,
     fee: 0,
     priorDebt: false,
+    // Remember the last choice; tithing is on until the user says otherwise.
+    tithe: last.tithe ?? true,
     ...preset,
   };
 }
@@ -191,6 +196,7 @@ export function QuickAddForm({
       reasonId: s.reasonId,
       targetBalance: isAdjustment ? s.amount : undefined,
       priorDebt: canBePriorDebt && s.priorDebt,
+      tithe: type === "income" && s.tithe,
       note: s.note,
       fee: type === "transfer" ? s.fee : 0,
     };
@@ -211,7 +217,7 @@ export function QuickAddForm({
                 amount: tithe,
                 date: currentTime(),
                 accountId: input.accountId,
-                reasonId: tithingRules(data.reasons, data.settings.tithingRate).tithingReasonId,
+                reasonId: tithingRules(data.reasons).tithingReasonId,
                 note: "",
               });
               toast(t.tithing.recorded, { onUndo: () => undo(r.undo) });
@@ -235,7 +241,7 @@ export function QuickAddForm({
 
   function suggestTithe(saved: Movement): number {
     if (saved.type !== "income") return 0;
-    const rules = tithingRules(data.reasons, data.settings.tithingRate);
+    const rules = tithingRules(data.reasons);
     return tithingSuggestion(saved, [...data.movements, saved], rules);
   }
 
@@ -404,6 +410,15 @@ export function QuickAddForm({
               <p className={styles.empty}>{t.quickAdd.noReasons}</p>
             )}
           </Field>
+        )}
+
+        {type === "income" && (
+          <Toggle
+            checked={s.tithe}
+            onChange={(tithe) => set({ tithe })}
+            title={t.quickAdd.tithe}
+            hint={s.amount > 0 ? t.quickAdd.titheHint(data.fmt(titheOf(s.amount), { reveal: true })) : undefined}
+          />
         )}
 
         <Button

@@ -102,6 +102,17 @@ describe("saveMovement", () => {
     expect((await db.movements.get(id))!.reasonId).toBeUndefined();
   });
 
+  it("stores tithe only on incomes and remembers the last choice", async () => {
+    const base = { amount: 100_000, date: 1, accountId: nu, note: "", tithe: true };
+    const { id: a } = await saveMovement({ ...base, type: "income", reasonId: work }, undefined, db);
+    const { id: b } = await saveMovement({ ...base, type: "expense", reasonId: food }, undefined, db);
+    expect((await db.movements.get(a))!.tithe).toBe(true);
+    expect((await db.movements.get(b))!.tithe).toBeUndefined();
+    expect((await db.settings.get("settings"))!.lastUsed.tithe).toBe(true);
+    await saveMovement({ ...base, type: "income", reasonId: work, tithe: false }, undefined, db);
+    expect((await db.settings.get("settings"))!.lastUsed.tithe).toBe(false);
+  });
+
   it("keeps priorDebt only on repayments and settlements", async () => {
     const base = { amount: 30_000, date: 1, accountId: nu, personId: mom, reasonId: lunch, note: "", priorDebt: true };
     const { id: a } = await saveMovement({ ...base, type: "repayment", direction: "in" }, undefined, db);
@@ -119,7 +130,7 @@ describe("saveMovement", () => {
       db,
     );
     const s = (await db.settings.get("settings"))!;
-    expect(s.lastUsed).toEqual({ type: "expense", accountId: cash, reasonByType: { expense: food } });
+    expect(s.lastUsed).toMatchObject({ type: "expense", accountId: cash, reasonByType: { expense: food } });
   });
 });
 
@@ -234,9 +245,9 @@ describe("reasons", () => {
 
   it("adds at the end of its group with sensible defaults", async () => {
     const id = await createReason("income", " Clases ", db);
-    expect(await db.reasons.get(id)).toMatchObject({ name: "Clases", group: "income", order: 4, countsForTithing: true });
+    expect(await db.reasons.get(id)).toMatchObject({ name: "Clases", group: "income", order: 4 });
     const ex = await createReason("expense", "Mascotas", db);
-    expect(await db.reasons.get(ex)).toMatchObject({ order: 8, countsForTithing: false, essential: false });
+    expect(await db.reasons.get(ex)).toMatchObject({ order: 8, essential: false });
   });
 
   it("reorders within the group only", async () => {

@@ -60,8 +60,6 @@ export interface Reason {
   archived: boolean;
   /** Expense reasons: counts as essential spending in the health check. */
   essential: boolean;
-  /** Income reasons: counts toward tithing. */
-  countsForTithing: boolean;
   /** Special built-in meaning. */
   role?: "tithing" | "fee";
   createdAt: Timestamp;
@@ -99,6 +97,8 @@ export interface Movement {
    * Same ledger effect as an in-kind settlement.
    */
   forgiven?: boolean;
+  /** Income only: "Añadir al diezmo" — 10% of it is owed as tithe. */
+  tithe?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -106,7 +106,6 @@ export interface Movement {
 export interface Settings {
   key: "settings";
   currency: CurrencyConfig;
-  tithingRate: number;
   theme: "system" | "light" | "dark";
   lastExportAt: Timestamp | null;
   /** Mask amounts on screen (privacy in public). */
@@ -116,6 +115,8 @@ export interface Settings {
     accountId?: ID;
     /** Last reason picked per movement type. */
     reasonByType?: Partial<Record<MovementType, ID>>;
+    /** Last "Añadir al diezmo" choice for income. */
+    tithe?: boolean;
   };
 }
 

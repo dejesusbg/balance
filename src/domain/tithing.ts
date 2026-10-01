@@ -1,38 +1,28 @@
-// Tithing: owed = rate × qualifying income − tithing expenses recorded.
-// Each income's share is rounded on its own, so suggestions add up exactly.
+// Tithing: 10% of every income marked "Añadir al diezmo", minus the tithes
+// recorded (expenses with the built-in "Diezmo" reason). Each income's share
+// is rounded on its own, so suggestions add up exactly.
 
-import type { Amount, ID, Movement, Reason } from "./types";
 import { sortChronologically } from "./ledger";
+import type { Amount, ID, Movement, Reason } from "./types";
+
+export const TITHE_RATE = 0.1;
 
 /** Tithe due for one income (whole pesos). */
-export const titheOf = (amount: Amount, rate: number): Amount => Math.round(amount * rate);
+export const titheOf = (amount: Amount): Amount => Math.round(amount * TITHE_RATE);
 
 export interface TithingRules {
-  rate: number;
-  /** Income reasons that count toward tithing. */
-  countingReasonIds: Set<ID>;
   /** The built-in "Diezmo" expense reason. */
   tithingReasonId: ID | undefined;
 }
 
-export function tithingRules(reasons: Reason[], rate: number): TithingRules {
-  return {
-    rate,
-    countingReasonIds: new Set(
-      reasons.filter((r) => r.group === "income" && r.countsForTithing).map((r) => r.id),
-    ),
-    tithingReasonId: reasons.find((r) => r.role === "tithing")?.id,
-  };
-}
+export const tithingRules = (reasons: Reason[]): TithingRules => ({
+  tithingReasonId: reasons.find((r) => r.role === "tithing")?.id,
+});
 
-/** How a movement changes the pending tithe: + for counted income, − for tithes paid. */
+/** How a movement changes the pending tithe: + for marked income, − for tithes given. */
 export function tithingDelta(m: Movement, rules: TithingRules): Amount {
-  if (m.type === "income" && m.reasonId && rules.countingReasonIds.has(m.reasonId)) {
-    return titheOf(m.amount, rules.rate);
-  }
-  if (m.type === "expense" && m.reasonId && m.reasonId === rules.tithingReasonId) {
-    return -m.amount;
-  }
+  if (m.type === "income" && m.tithe) return titheOf(m.amount);
+  if (m.type === "expense" && m.reasonId && m.reasonId === rules.tithingReasonId) return -m.amount;
   return 0;
 }
 

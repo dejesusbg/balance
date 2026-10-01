@@ -24,7 +24,6 @@ export function newId(): string {
 export const DEFAULT_SETTINGS: Settings = {
   key: "settings",
   currency: DEFAULT_CURRENCY,
-  tithingRate: 0.1,
   theme: "system",
   lastExportAt: null,
   lastUsed: {},
@@ -56,7 +55,6 @@ export function buildBaseSeed(now: number) {
       readonly {
         name: string;
         essential?: boolean;
-        countsForTithing?: boolean;
         role?: Reason["role"];
       }[],
     ][]
@@ -68,7 +66,6 @@ export function buildBaseSeed(now: number) {
       order,
       archived: false,
       essential: r.essential ?? false,
-      countsForTithing: r.countsForTithing ?? false,
       role: r.role,
       createdAt: now,
     })),
