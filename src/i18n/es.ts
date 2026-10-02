@@ -439,7 +439,7 @@ export const es = {
     people: ["Mamá", "Papá", "Hermano"],
     reasons: {
       income: [
-        { name: "Tarea/Trabajo" },
+        { name: "Trabajo" },
         { name: "Regalo" },
         { name: "Reembolso" },
         { name: "Otro" },
@@ -455,7 +455,7 @@ export const es = {
         { name: "Otro", essential: false },
       ],
       loan: [
-        { name: "Almuerzo/comida" },
+        { name: "Comida" },
         { name: "Compra de regalo" },
         { name: "Emergencia" },
         { name: "Otro" },

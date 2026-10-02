@@ -83,7 +83,7 @@ export function generateSampleMovements(opts: {
         amount,
         date,
         accountId: isGift ? wallet.id : main.id,
-        reasonId: reason("income", isGift ? "Regalo" : "Tarea/Trabajo"),
+        reasonId: reason("income", isGift ? "Regalo" : "Trabajo"),
         tithe: !isGift,
         note: isGift ? "Regalo" : pick(["Proyecto web", "Tarea", "Clases", "Freelance"]),
       });
@@ -177,7 +177,7 @@ export function generateSampleMovements(opts: {
       const balance = owed.get(p.id) ?? 0;
       const kind = r();
       const loanReason = () =>
-        reason("loan", pick(["Almuerzo/comida", "Compra de regalo", "Emergencia"]));
+        reason("loan", pick(["Comida", "Compra de regalo", "Emergencia"]));
       if (balance > 0 && kind < 0.35) {
         push({
           type: "repayment",

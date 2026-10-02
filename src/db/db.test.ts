@@ -76,12 +76,39 @@ describe("database", () => {
 
     const db = new BalanceDB(name);
     await db.open();
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
     expect((await db.movements.get("a"))!.tithe).toBe(true);
     expect((await db.movements.get("b"))!.tithe).toBeUndefined();
     expect((await db.movements.get("c"))!.tithe).toBeUndefined();
     expect(await db.reasons.get("work")).not.toHaveProperty("countsForTithing");
     expect(await db.settings.get("settings")).not.toHaveProperty("tithingRate");
+    db.close();
+  });
+
+  it("migrates v2 → v3: renames the two seeded reasons, unless the user renamed them", async () => {
+    const name = "test-migrate-v3";
+    const v2 = new Dexie(name);
+    v2.version(2).stores({
+      accounts: "id, order",
+      people: "id, order",
+      reasons: "id, group, order",
+      movements: "id, date, type, accountId, toAccountId, personId, reasonId",
+      settings: "key",
+    });
+    await v2.open();
+    await v2.table("reasons").bulkAdd([
+      { id: "a", group: "income", name: "Tarea/Trabajo" },
+      { id: "b", group: "loan", name: "Almuerzo/comida" },
+      { id: "c", group: "expense", name: "Tarea/Trabajo" }, // other group: untouched
+      { id: "d", group: "loan", name: "Almuerzos" }, // user's own name: untouched
+    ]);
+    v2.close();
+
+    const db = new BalanceDB(name);
+    await db.open();
+    expect(db.verno).toBe(3);
+    const names = Object.fromEntries((await db.reasons.toArray()).map((r) => [r.id, r.name]));
+    expect(names).toEqual({ a: "Trabajo", b: "Comida", c: "Tarea/Trabajo", d: "Almuerzos" });
     db.close();
   });
 });

@@ -28,9 +28,10 @@ beforeEach(async () => {
   [nu, nequi, cash] = accounts.map((a) => a.id);
   mom = (await db.people.orderBy("order").first())!.id;
   const reasons = await db.reasons.toArray();
-  food = reasons.find((r) => r.name === "Comida")!.id;
-  work = reasons.find((r) => r.name === "Tarea/Trabajo")!.id;
-  lunch = reasons.find((r) => r.name === "Almuerzo/comida")!.id;
+  const byName = (group: string, name: string) => reasons.find((r) => r.group === group && r.name === name)!.id;
+  food = byName("expense", "Comida");
+  work = byName("income", "Trabajo");
+  lunch = byName("loan", "Comida");
 });
 
 const balances = async () =>
@@ -252,7 +253,7 @@ describe("reasons", () => {
 
   it("reorders within the group only", async () => {
     await moveReason(work, 1, db);
-    expect((await names("income")).slice(0, 2)).toEqual(["Regalo", "Tarea/Trabajo"]);
+    expect((await names("income")).slice(0, 2)).toEqual(["Regalo", "Trabajo"]);
     expect((await names("expense"))[0]).toBe("Compra deseada");
   });
 

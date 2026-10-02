@@ -14,7 +14,7 @@ describe("backup", () => {
   it("round-trips everything through JSON into another device", async () => {
     const a = await fresh();
     const nu = (await a.accounts.orderBy("order").first())!.id;
-    const work = (await a.reasons.toArray()).find((r) => r.name === "Tarea/Trabajo")!.id;
+    const work = (await a.reasons.toArray()).find((r) => r.group === "income" && r.name === "Trabajo")!.id;
     await saveMovement({ type: "income", amount: 500_000, date: 1, accountId: nu, reasonId: work, note: 'con "comillas", y coma', tithe: true }, undefined, a);
     const file = JSON.stringify(await buildBackup(123, a));
 
@@ -33,7 +33,7 @@ describe("backup", () => {
       data: {
         accounts: [],
         people: [],
-        reasons: [{ id: "work", group: "income", countsForTithing: true }],
+        reasons: [{ id: "work", group: "income", name: "Tarea/Trabajo", countsForTithing: true }],
         movements: [{ id: "m", type: "income", reasonId: "work", amount: 10, date: 1 }],
         settings: [{ key: "settings", tithingRate: 0.1, lastUsed: {} }],
       },
@@ -42,6 +42,7 @@ describe("backup", () => {
     expect(b.schemaVersion).toBe(SCHEMA_VERSION);
     expect(b.data.movements[0]).toMatchObject({ tithe: true });
     expect(b.data.reasons[0]).not.toHaveProperty("countsForTithing");
+    expect(b.data.reasons[0]).toMatchObject({ name: "Trabajo" }); // v3 rename applies too
     expect(b.data.settings[0]).not.toHaveProperty("tithingRate");
   });
 
@@ -60,7 +61,7 @@ describe("backup", () => {
     const a = await fresh();
     const [nu] = await a.accounts.orderBy("order").toArray();
     const mom = (await a.people.toArray())[0];
-    const food = (await a.reasons.toArray()).find((r) => r.name === "Comida")!.id;
+    const food = (await a.reasons.toArray()).find((r) => r.group === "expense" && r.name === "Comida")!.id;
     await saveMovement({ type: "expense", amount: 12_000, date: 2, accountId: nu.id, reasonId: food, note: 'dijo "hola", ok' }, undefined, a);
     await saveMovement({ type: "settlement", direction: "in", amount: 5_000, date: 3, personId: mom.id, note: "" }, undefined, a);
     const csv = movementsCsv((await buildBackup(0, a)).data);

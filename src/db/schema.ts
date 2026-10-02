@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { Account, Movement, Person, Reason, Settings } from "@/domain/types";
-import { migrateV1toV2, type RawData } from "./migrations";
+import { migrateV1toV2, migrateV2toV3, type RawData } from "./migrations";
 import { buildBaseSeed } from "./seed";
 
 /**
@@ -8,7 +8,7 @@ import { buildBaseSeed } from "./seed";
  * `this.version(n).stores(...).upgrade(...)` block below. Exported backups
  * carry this number so imports can be migrated too (see backup.ts).
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export class BalanceDB extends Dexie {
   accounts!: EntityTable<Account, "id">;
@@ -44,7 +44,16 @@ export class BalanceDB extends Dexie {
         }
       });
 
-    // Next schema change: add this.version(3) and a step in migrations.ts.
+    // v3: "Tarea/Trabajo" → "Trabajo", "Almuerzo/comida" → "Comida".
+    this.version(3)
+      .stores({})
+      .upgrade(async (tx) => {
+        const reasons = await tx.table("reasons").toArray();
+        const next = migrateV2toV3({ accounts: [], people: [], reasons, movements: [], settings: [] });
+        await tx.table("reasons").bulkPut(next.reasons);
+      });
+
+    // Next schema change: add this.version(4) and a step in migrations.ts.
 
     // First run: seed accounts, people, reasons and settings.
     this.on("populate", async (tx) => {
