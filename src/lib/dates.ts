@@ -31,6 +31,15 @@ export function formatDayHeader(ts: number, now = Date.now()): string {
 
 export const formatTime = (ts: number) => timeFmt.format(ts);
 
+const longFmt = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long" });
+const longYearFmt = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+
+/** "16 de julio" (adds the year when it isn't the current one). */
+export function formatLongDate(ts: number, now = Date.now()): string {
+  const sameYear = new Date(ts).getFullYear() === new Date(now).getFullYear();
+  return (sameYear ? longFmt : longYearFmt).format(ts);
+}
+
 /** "29 sept" — compact date for rows. */
 export const formatShortDate = (ts: number) => shortFmt.format(ts);
 

@@ -188,7 +188,7 @@ export const es = {
     empty: "Aún no hay personas.",
     history: "Historial",
     noHistory: "Sin movimientos con esta persona.",
-    lastActivity: (d: string) => `Último movimiento: ${d}`,
+    noActivity: "Sin movimientos",
     summary: {
       title: "Resumen",
       opening: "Saldo inicial",

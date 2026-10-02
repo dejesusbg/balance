@@ -9,7 +9,7 @@ import { Button, TopBar } from "@/components/ui";
 import { Avatar } from "@/components/ui/Avatar";
 import { peopleWithBalances, type PersonRow } from "@/domain/people";
 import { t } from "@/i18n";
-import { formatShortDate } from "@/lib/dates";
+import { formatLongDate } from "@/lib/dates";
 import styles from "./personas.module.css";
 
 export default function PeoplePage() {
@@ -30,7 +30,7 @@ export default function PeoplePage() {
         <span className={styles.text}>
           <span className={styles.name}>{person.name}</span>
           <span className={styles.sub}>
-            {lastActivity ? t.people.lastActivity(formatShortDate(lastActivity)) : t.people.noHistory}
+            {lastActivity ? formatLongDate(lastActivity) : t.people.noActivity}
           </span>
         </span>
         <span className={styles.amountCol}>
