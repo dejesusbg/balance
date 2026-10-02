@@ -47,12 +47,15 @@
   gap: var(--space-8);
 }
 
-/* Status = icon + label + tint, never color alone */
+/* Status = one small saturated badge + label (design system: feedback
+   colors only on badges), never color alone. Card is a neutral grey tile. */
 .verdict {
   display: flex;
+  align-items: flex-start;
   gap: var(--space-12);
   padding: var(--space-12) var(--space-16);
   border-radius: var(--radius-md);
+  background: var(--surface-sunken);
 }
 
 .verdict p {
@@ -61,34 +64,37 @@
   color: var(--text-primary);
 }
 
-.verdict svg {
+.badge {
   flex: none;
-  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.good .badge {
+  background: var(--feedback-success);
+}
+
+.warn .badge {
+  background: var(--feedback-warning);
+  color: #000;
+}
+
+.bad .badge {
+  background: var(--feedback-error);
 }
 
 .levelLabel {
-  font: var(--fw-semibold) var(--fs-caption) / var(--lh-caption) var(--font-sans);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.good {
-  background: var(--status-good-tint);
-  color: var(--status-good);
-}
-
-.warn {
-  background: var(--status-warn-tint);
-  color: var(--status-warn);
-}
-
-.bad {
-  background: var(--status-bad-tint);
-  color: var(--status-bad);
+  font: var(--fw-medium) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  color: var(--text-secondary);
 }
 
 .section {
-  padding: var(--space-24) var(--screen-gutter);
+  padding: var(--section-pad-y) var(--screen-gutter);
   border-bottom: var(--border-card) solid var(--divider);
 }
 
@@ -280,7 +286,7 @@
 }
 
 .rules {
-  padding: var(--space-24) var(--screen-gutter);
+  padding: var(--section-pad-y) var(--screen-gutter);
   font-size: var(--fs-body-sm);
   color: var(--text-secondary);
 }

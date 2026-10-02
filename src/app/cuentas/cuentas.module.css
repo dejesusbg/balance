@@ -86,5 +86,5 @@
 }
 
 .historyHead {
-  padding: var(--space-24) var(--screen-gutter) var(--space-8);
+  padding: var(--section-pad-y) var(--screen-gutter) var(--space-8);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { AlertTriangle, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAppData, type AppData } from "@/components/AppData";
@@ -13,7 +13,7 @@ import styles from "./salud.module.css";
 
 const monthFmt = new Intl.DateTimeFormat("es-CO", { month: "short" });
 const decimal = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
-const LEVEL_ICON = { good: CheckCircle2, warn: AlertTriangle, bad: XCircle } as const;
+const LEVEL_ICON = { good: Check, warn: AlertTriangle, bad: X } as const;
 const BUCKETS: (keyof SpendSplit)[] = ["essential", "discretionary", "tithing"];
 
 function verdictText(v: Verdict, fmt: AppData["fmt"]): string {
@@ -82,7 +82,9 @@ export default function HealthPage() {
             const Icon = LEVEL_ICON[v.level];
             return (
               <li key={v.id} className={`${styles.verdict} ${styles[v.level]}`}>
-                <Icon size={22} strokeWidth={1.75} aria-hidden />
+                <span className={styles.badge} aria-hidden>
+                  <Icon size={16} strokeWidth={2.5} />
+                </span>
                 <div>
                   <span className={styles.levelLabel}>{t.health.level[v.level as Level]}</span>
                   <p>{verdictText(v, fmt)}</p>

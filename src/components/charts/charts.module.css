@@ -141,7 +141,7 @@
 
 /* ---- Reason bars ---- */
 .section {
-  padding: var(--space-24) var(--screen-gutter);
+  padding: var(--section-pad-y) var(--screen-gutter);
   border-bottom: var(--border-card) solid var(--divider);
 }
 

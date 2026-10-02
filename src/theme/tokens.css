@@ -3,8 +3,8 @@
  * (claude.ai/design/p/4dce6a1b-…). Names follow that system.
  *
  * Adaptations for a money tracker (not in the source system):
- * - Semantic in/out/warning colors for amounts and health indicators.
- * - A dark theme derived from the purple scale.
+ * - Semantic in/out/warning colors for amounts, darkened from the system's
+ *   feedback colors so text passes WCAG AA.
  * - Tabular numerals for money.
  * Components must only use these variables.
  */
@@ -51,6 +51,8 @@
   --border-subtle: var(--gray-100);
   --divider: var(--gray-100);
   --overlay-scrim: rgb(0 0 0 / 0.48);
+  /* Snackbar: dark on light pages, lifted grey on dark pages */
+  --surface-toast: var(--gray-900);
   --focus-ring: var(--purple-500);
 
   /* Money tracker extensions (AA contrast on page and sunken surfaces) */
@@ -63,6 +65,12 @@
   --status-warn-tint: #fdf0dc;
   --status-bad: #c8102e;
   --status-bad-tint: #fde6e9;
+
+  /* Feedback colors from the design system (badges/icons, not body text) */
+  --feedback-success: #00aa1e;
+  --feedback-warning: #fea44b;
+  --feedback-error: #fe0200;
+  --feedback-info: #5dc8ff;
 
   /* Typography */
   --font-sans: var(--font-hanken), "Hanken Grotesk", system-ui, -apple-system,
@@ -101,6 +109,8 @@
   --space-40: 40px;
   --space-48: 48px;
   --screen-gutter: 24px;
+  /* Vertical padding of full-width sections (~28dp in the system) */
+  --section-pad-y: 28px;
 
   /* Shape */
   --radius-xs: 4px;
@@ -141,38 +151,41 @@
   }
 }
 
-/* Dark theme, applied from the OS setting unless the user forces light. */
+/* Dark theme from the design system (NuIS dark mode): #111 surface, white
+   ink, #B3B3B3 secondary, #2A2A2A fills/dividers, brand purple buttons and
+   lavender (#C6A7F7) accent text. Applied from the OS unless forced light. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --brand: var(--purple-500);
-    --brand-strong: var(--purple-400);
+    --brand: var(--purple-600);
+    --brand-strong: var(--purple-500);
     --brand-soft: var(--purple-700);
     --brand-tint: #2a1640;
-    --text-primary: #f6f3f9;
-    --text-secondary: #b9b2c2;
-    --text-tertiary: #8c8495;
-    --text-brand: #c6a7f7;
-    --surface-page: #0f0c13;
-    --surface-sunken: #1b1721;
-    --surface-card: #1b1721;
-    --surface-sheet: #1b1721;
-    --surface-hero: #4a0677;
-    --surface-hero-card: #6c1e9f;
-    --fill-neutral: #27222e;
-    --fill-neutral-pressed: #332d3b;
-    --border-subtle: #27222e;
-    --divider: #27222e;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-tertiary: #8c8c8c;
+    --text-brand: var(--purple-300);
+    --surface-page: #111111;
+    --surface-sunken: #1c1c1c;
+    --surface-card: #1c1c1c;
+    --surface-sheet: #1c1c1c;
+    --surface-hero: var(--purple-600);
+    --surface-hero-card: var(--purple-500);
+    --fill-neutral: #2a2a2a;
+    --fill-neutral-pressed: #333333;
+    --border-subtle: #2a2a2a;
+    --divider: #2a2a2a;
     --overlay-scrim: rgb(0 0 0 / 0.64);
+    --surface-toast: #3a3a3a;
     --focus-ring: var(--purple-300);
     --money-in: #4fd18b;
-    --money-out: #f6f3f9;
-    --money-neutral: #b9b2c2;
+    --money-out: #ffffff;
+    --money-neutral: #b3b3b3;
     --status-good: #4fd18b;
-    --status-good-tint: #12301f;
+    --status-good-tint: #13261a;
     --status-warn: #f2b45a;
-    --status-warn-tint: #36260d;
+    --status-warn-tint: #2e2312;
     --status-bad: #ff7a8a;
-    --status-bad-tint: #3a1219;
+    --status-bad-tint: #2e1518;
     --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.5);
     --shadow-fab: 0 6px 20px rgb(0 0 0 / 0.5);
     color-scheme: dark;
@@ -180,35 +193,36 @@
 }
 
 :root[data-theme="dark"] {
-  --brand: var(--purple-500);
-  --brand-strong: var(--purple-400);
+  --brand: var(--purple-600);
+  --brand-strong: var(--purple-500);
   --brand-soft: var(--purple-700);
   --brand-tint: #2a1640;
-  --text-primary: #f6f3f9;
-  --text-secondary: #b9b2c2;
-  --text-tertiary: #8c8495;
-  --text-brand: #c6a7f7;
-  --surface-page: #0f0c13;
-  --surface-sunken: #1b1721;
-  --surface-card: #1b1721;
-  --surface-sheet: #1b1721;
-  --surface-hero: #4a0677;
-  --surface-hero-card: #6c1e9f;
-  --fill-neutral: #27222e;
-  --fill-neutral-pressed: #332d3b;
-  --border-subtle: #27222e;
-  --divider: #27222e;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #8c8c8c;
+  --text-brand: var(--purple-300);
+  --surface-page: #111111;
+  --surface-sunken: #1c1c1c;
+  --surface-card: #1c1c1c;
+  --surface-sheet: #1c1c1c;
+  --surface-hero: var(--purple-600);
+  --surface-hero-card: var(--purple-500);
+  --fill-neutral: #2a2a2a;
+  --fill-neutral-pressed: #333333;
+  --border-subtle: #2a2a2a;
+  --divider: #2a2a2a;
   --overlay-scrim: rgb(0 0 0 / 0.64);
+  --surface-toast: #3a3a3a;
   --focus-ring: var(--purple-300);
   --money-in: #4fd18b;
-  --money-out: #f6f3f9;
-  --money-neutral: #b9b2c2;
+  --money-out: #ffffff;
+  --money-neutral: #b3b3b3;
   --status-good: #4fd18b;
-  --status-good-tint: #12301f;
+  --status-good-tint: #13261a;
   --status-warn: #f2b45a;
-  --status-warn-tint: #36260d;
+  --status-warn-tint: #2e2312;
   --status-bad: #ff7a8a;
-  --status-bad-tint: #3a1219;
+  --status-bad-tint: #2e1518;
   --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.5);
   --shadow-fab: 0 6px 20px rgb(0 0 0 / 0.5);
   color-scheme: dark;

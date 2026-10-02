@@ -45,12 +45,16 @@
   color: var(--text-secondary);
 }
 
+/* StatusChip from the design system */
 .tag {
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--brand-tint);
-  color: var(--text-brand);
-  font-weight: var(--fw-medium);
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: var(--radius-xs);
+  background: var(--fill-neutral);
+  color: var(--text-secondary);
+  font: var(--fw-medium) 13px/1 var(--font-sans);
 }
 
 .order {

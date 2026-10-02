@@ -16,12 +16,27 @@ personal de finanzas. Los tokens viven en `src/theme/tokens.css`.
 - Estados: presionado = opacidad .72 + escala .98; seleccionado = punto morado.
 - Voz en "tú", sentence case, sin emoji.
 
+## Sincronización (2026-10-01, segunda versión del sistema)
+- **Modo oscuro del sistema:** página `#111`, texto blanco, secundario `#B3B3B3`,
+  rellenos y divisores `#2A2A2A`, botones en morado de marca y texto de acento
+  lavanda `#C6A7F7`. Reemplaza el oscuro con tinte morado que habíamos derivado.
+- **Colores de feedback** (`--feedback-success/warning/error/info`) solo en
+  insignias: los veredictos de Salud usan una tarjeta gris neutra con una sola
+  insignia saturada, como el sistema.
+- **StatusChip** (gris, 4 px, 13 medium) para las etiquetas de Motivos.
+- **Secciones** con ~28 px de padding vertical (`--section-pad-y`).
+- Sin mayúsculas sostenidas (sentence case en todo).
+- Componentes base (Button, ListRow, TileButton, Card…) sin cambios en el sistema.
+
 ## Adaptaciones propias
-- Colores semánticos para entradas/salidas y semáforo de salud (contraste AA).
-- Tema oscuro derivado de la escala morada (el sistema original solo es claro).
+- Colores para entradas/salidas y texto de estado, oscurecidos a partir de los
+  colores de feedback para pasar contraste AA como texto.
+- Fondo propio para el toast en oscuro (`--surface-toast`), para que no se
+  pierda sobre `#111`.
 - Números tabulares para montos.
 - Botón flotante "+" (único elemento con sombra, junto con los sheets).
 
 ## Lo que NO se usa
-- Logo e ilustraciones 3D de Nu: son activos de marca de un tercero.
+- Logo, ilustraciones 3D e ilustraciones NuIS (spot, feature, editorial):
+  son activos de marca de Nubank.
   El icono de la app es propio (`scripts/gen-icons.mjs`).
