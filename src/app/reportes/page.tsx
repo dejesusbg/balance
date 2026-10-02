@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronRight, HeartPulse } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAppData } from "@/components/AppData";
 import { MonthlyChart } from "@/components/charts/MonthlyChart";
@@ -35,6 +37,14 @@ export default function ReportsPage() {
     <>
       <div className={styles.page}>
         <h1 className="page-title">{t.reports.title}</h1>
+        <Link href="/salud" className={styles.healthLink}>
+          <HeartPulse size={24} strokeWidth={1.75} aria-hidden />
+          <span>
+            <strong>{t.health.link}</strong>
+            <span>{t.health.linkHint}</span>
+          </span>
+          <ChevronRight size={22} strokeWidth={1.75} aria-hidden />
+        </Link>
         <ChipGroup
           label={t.reports.period}
           options={PRESETS.map((p) => ({ value: p, label: t.reports.presets[p] }))}

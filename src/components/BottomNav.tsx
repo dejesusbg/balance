@@ -22,7 +22,7 @@ export function BottomNav() {
         const active =
           href === "/"
             ? pathname === "/" || pathname.startsWith("/cuentas")
-            : pathname.startsWith(href);
+            : pathname.startsWith(href) || (href === "/reportes" && pathname.startsWith("/salud"));
         return (
           <Link
             key={href}

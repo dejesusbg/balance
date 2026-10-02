@@ -1,0 +1,304 @@
+/* Series colors validated with the dataviz palette script for both themes.
+   The aqua slot is under 3:1 in light mode, so every segment has a labeled
+   legend row with its amount (relief rule). */
+.section,
+.page {
+  --seg-essential: #820ad1;
+  --seg-discretionary: #eb6834;
+  --seg-tithing: #1baf7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .section,
+  :root:where(:not([data-theme="light"])) .page {
+    --seg-essential: #a359d6;
+    --seg-discretionary: #d95926;
+    --seg-tithing: #199e70;
+  }
+}
+:root[data-theme="dark"] .section,
+:root[data-theme="dark"] .page {
+  --seg-essential: #a359d6;
+  --seg-discretionary: #d95926;
+  --seg-tithing: #199e70;
+}
+
+.page {
+  padding: 0 var(--screen-gutter) var(--space-24);
+  border-bottom: var(--border-card) solid var(--divider);
+}
+
+.note,
+.hint {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.verdicts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* Status = icon + label + tint, never color alone */
+.verdict {
+  display: flex;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+}
+
+.verdict p {
+  margin: 2px 0 0;
+  font: var(--fw-regular) var(--fs-body) / var(--lh-body) var(--font-sans);
+  color: var(--text-primary);
+}
+
+.verdict svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.levelLabel {
+  font: var(--fw-semibold) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.good {
+  background: var(--status-good-tint);
+  color: var(--status-good);
+}
+
+.warn {
+  background: var(--status-warn-tint);
+  color: var(--status-warn);
+}
+
+.bad {
+  background: var(--status-bad-tint);
+  color: var(--status-bad);
+}
+
+.section {
+  padding: var(--space-24) var(--screen-gutter);
+  border-bottom: var(--border-card) solid var(--divider);
+}
+
+.big {
+  margin: var(--space-12) 0 0;
+  font: var(--fw-bold) var(--fs-title-1) / var(--lh-title-1) var(--font-sans);
+}
+
+.lines {
+  margin: var(--space-12) 0 0;
+}
+
+.lines > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-8) 0;
+}
+
+.lines dt {
+  color: var(--text-secondary);
+}
+
+.lines dd {
+  margin: 0;
+  font-weight: var(--fw-medium);
+}
+
+.lines .total {
+  border-top: var(--border-card) solid var(--divider);
+  padding-top: var(--space-12);
+}
+
+.lines .total dt,
+.lines .total dd {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+
+.tiles > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  font: var(--fw-medium) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.tiles strong {
+  font: var(--fw-semibold) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-8);
+  height: 96px;
+  margin-top: var(--space-16);
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+}
+
+.barTrack {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 28px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.barFill {
+  display: block;
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--seg-essential);
+}
+
+.barLabel {
+  font: var(--fw-regular) 11px var(--font-sans);
+  color: var(--text-tertiary);
+}
+
+/* Stacked bar: 2px surface gap between segments, rounded ends */
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  margin-top: var(--space-16);
+}
+
+.stack span {
+  min-width: 4px;
+}
+
+.stack span:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.stack span:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.stack span:only-child {
+  border-radius: 4px;
+}
+
+.seg_essential { background: var(--seg-essential); }
+.seg_discretionary { background: var(--seg-discretionary); }
+.seg_tithing { background: var(--seg-tithing); }
+.seg_liquid { background: var(--seg-essential); }
+.seg_lent { background: var(--seg-discretionary); }
+
+.legend {
+  list-style: none;
+  margin: var(--space-12) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  font-size: var(--fs-body-sm);
+}
+
+.legend li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto 40px;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.legend li > :last-child {
+  text-align: right;
+}
+
+.legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.loans {
+  list-style: none;
+  margin: var(--space-12) calc(-1 * var(--screen-gutter)) 0;
+  padding: 0;
+}
+
+.loan {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--screen-gutter);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.loanName {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-weight: var(--fw-medium);
+}
+
+.loanName span {
+  font: var(--fw-regular) var(--fs-caption) / var(--lh-caption) var(--font-sans);
+}
+
+.old {
+  color: var(--status-warn);
+}
+
+.rules {
+  padding: var(--space-24) var(--screen-gutter);
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+}
+
+.rules summary {
+  cursor: pointer;
+  font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
+  color: var(--text-brand);
+}
+
+.rules ul {
+  padding-left: var(--space-20);
+}
+
+.rules pre {
+  overflow-x: auto;
+  padding: var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-size: var(--fs-caption);
+}

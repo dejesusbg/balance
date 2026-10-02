@@ -276,6 +276,73 @@ export const es = {
     formula:
       "Es el 10% de cada ingreso que marcas con «Añadir al diezmo», menos los diezmos que registras.",
   },
+  health: {
+    title: "Salud financiera",
+    link: "Salud financiera",
+    linkHint: "¿Vas bien o mal? Revisión basada en tus datos",
+    level: { good: "Bien", warn: "Atención", bad: "Alerta" },
+    notEnough:
+      "Aún no hay un mes completo de datos. Las comparaciones aparecen cuando termines tu primer mes.",
+    verdicts: {
+      spendPace: (pct: number) =>
+        pct >= 0
+          ? `A este ritmo gastarás ${pct}% más que tu promedio de 3 meses.`
+          : `A este ritmo gastarás ${-pct}% menos que tu promedio de 3 meses.`,
+      projection: (net: string, negative: boolean) =>
+        negative ? `Si sigues así, cerrarías el mes en ${net}.` : `Si sigues así, cerrarías el mes con ${net} a favor.`,
+      savings: (rate: number, avg: number | null) =>
+        rate < 0
+          ? "Este mes estás gastando más de lo que te entra."
+          : `Este mes ahorras el ${rate}% de lo que te entra${avg !== null ? ` (promedio: ${avg}%)` : ""}.`,
+      noIncomeYet: (spent: string) => `Este mes aún no tienes ingresos y llevas ${spent} en gastos.`,
+      runway: (months: string, days: number) =>
+        `Con lo que tienes y tu gasto promedio, te alcanza para ${months} meses (${days} días).`,
+      incomeVolatile: (min: string, max: string) =>
+        `Tus ingresos varían mucho (entre ${min} y ${max} al mes). Un colchón de 3 meses te protege.`,
+      incomeStable: "Tus ingresos han sido estables.",
+      discretionary: (pct: number) => `El ${pct}% de lo que gastas no es esencial.`,
+      lentShare: (pct: number) => `El ${pct}% de tu dinero está prestado.`,
+      oldLoan: (name: string, amount: string, days: number) =>
+        `${name} te debe ${amount} desde hace ${days} días.`,
+      tithing: (amount: string) => `Diezmo pendiente: ${amount}.`,
+    },
+    income: "Ingresos por mes",
+    incomeHint: (n: number) => `Últimos ${n} ${n === 1 ? "mes completo" : "meses completos"}.`,
+    avg: "Promedio",
+    min: "Mínimo",
+    max: "Máximo",
+    spending: "Gasto mensual",
+    spendingHint: "Promedio de los últimos 3 meses completos.",
+    essential: "Esencial",
+    discretionary: "Discrecional",
+    tithing: "Diezmo",
+    essentialHint: "Marca qué motivos son esenciales en Ajustes → Motivos.",
+    thisMonth: "Este mes",
+    spentSoFar: "Gastado hasta hoy",
+    projected: "Gasto proyectado al cierre",
+    incomeSoFar: "Ingresos del mes",
+    projectedNet: "Balance proyectado",
+    dayOf: (d: number, total: number) => `Día ${d} de ${total}`,
+    savingsRate: "Tasa de ahorro",
+    savingsAvg: "Promedio",
+    runway: "Cuánto te dura el dinero",
+    runwayValue: (months: string) => `${months} meses`,
+    runwayDays: (days: number) => `${days} días al gasto promedio`,
+    loans: "Dinero prestado",
+    liquid: "Disponible",
+    lent: "Prestado",
+    loanAge: (days: number) => (days === 0 ? "hoy" : days === 1 ? "hace 1 día" : `hace ${days} días`),
+    noLoans: "Nadie te debe dinero.",
+    rules: "Cómo se calcula",
+    rulesList: [
+      "Promedios: meses completos desde que usas la app (máximo 6). El mes en curso no cuenta.",
+      "Proyección: gasto de este mes ÷ días transcurridos × días del mes. Los ingresos no se proyectan porque son irregulares.",
+      "Tasa de ahorro: (ingresos − gastos) ÷ ingresos.",
+      "Cuánto te dura: dinero disponible ÷ gasto promedio mensual.",
+      "Préstamos: los pagos se aplican primero a lo más antiguo.",
+    ],
+    thresholds: "Umbrales (src/domain/healthRules.ts)",
+  },
   settings: {
     title: "Ajustes",
     tithing: "Diezmo",

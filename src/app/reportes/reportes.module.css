@@ -64,3 +64,43 @@
   margin: var(--space-4) 0 var(--space-16);
   font-size: var(--fs-body-sm);
 }
+
+/* Grey tile (design system TileButton) */
+.healthLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  min-height: 72px;
+  margin-bottom: var(--space-20);
+  padding: 0 var(--space-20);
+  border-radius: var(--radius-lg);
+  background: var(--fill-neutral);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.healthLink:active {
+  background: var(--fill-neutral-pressed);
+}
+
+.healthLink > span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font: var(--fw-regular) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.healthLink strong {
+  font: var(--fw-medium) 17px/22px var(--font-sans);
+  color: var(--text-primary);
+}
+
+.healthLink > svg:first-child {
+  color: var(--text-brand);
+}
+
+.healthLink > svg:last-child {
+  color: var(--text-secondary);
+}
