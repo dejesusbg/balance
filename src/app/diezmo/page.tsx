@@ -1,6 +1,6 @@
 "use client";
 
-import { HandHeart } from "lucide-react";
+import { Church } from "lucide-react";
 import { useAppData } from "@/components/AppData";
 import { MovementRow } from "@/components/MovementRow";
 import { useQuickAdd } from "@/components/quick-add/QuickAdd";
@@ -42,7 +42,7 @@ export default function TithingPage() {
         </div>
         <p className={styles.formula}>{t.tithing.formula}</p>
         <Button
-          icon={HandHeart}
+          icon={Church}
           onClick={() =>
             openNew({
               option: "expense",

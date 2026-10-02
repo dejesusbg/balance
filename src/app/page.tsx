@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Eye, EyeOff, HandHeart, Wallet } from "lucide-react";
+import { Church, ChevronRight, Eye, EyeOff, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useAppData } from "@/components/AppData";
 import { BackupReminder } from "@/components/BackupReminder";
@@ -70,7 +70,7 @@ export default function Home() {
         <BackupReminder />
         {(tithing.due > 0 || tithing.paid > 0) && (
           <Link href="/diezmo" className={styles.tile}>
-            <HandHeart size={22} strokeWidth={1.75} aria-hidden />
+            <Church size={22} strokeWidth={1.75} aria-hidden />
             <span>{t.tithing.pending}</span>
             <strong className="money">
               {tithing.pending > 0

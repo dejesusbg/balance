@@ -6,11 +6,11 @@ import {
   Database,
   FileSpreadsheet,
   FolderOpen,
-  HandHeart,
+  Church,
   ShieldCheck,
   Tags,
   Trash2,
-  Users,
+  UsersRound,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -85,9 +85,9 @@ export default function SettingsPage() {
 
       <div className={styles.tiles}>
         <Tile href="/cuentas" icon={Wallet} title={t.settings.accounts} sub={t.settings.accountsHint} />
-        <Tile href="/personas" icon={Users} title={t.settings.people} sub={t.settings.peopleHint} />
+        <Tile href="/personas" icon={UsersRound} title={t.settings.people} sub={t.settings.peopleHint} />
         <Tile href="/ajustes/motivos" icon={Tags} title={t.settings.reasons} sub={t.settings.reasonsHint} />
-        <Tile href="/diezmo" icon={HandHeart} title={t.settings.tithing} sub={t.settings.tithingHint} />
+        <Tile href="/diezmo" icon={Church} title={t.settings.tithing} sub={t.settings.tithingHint} />
       </div>
 
       <section className={styles.section}>

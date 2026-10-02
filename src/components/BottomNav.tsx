@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartPie, House, ListOrdered, Settings, Users } from "lucide-react";
+import { Activity, ChartPie, House, Settings, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t } from "@/i18n";
@@ -8,8 +8,8 @@ import styles from "./BottomNav.module.css";
 
 const ITEMS = [
   { href: "/", label: t.nav.home, icon: House },
-  { href: "/movimientos", label: t.nav.movements, icon: ListOrdered },
-  { href: "/personas", label: t.nav.people, icon: Users },
+  { href: "/movimientos", label: t.nav.movements, icon: Activity },
+  { href: "/personas", label: t.nav.people, icon: UsersRound },
   { href: "/reportes", label: t.nav.reports, icon: ChartPie },
   { href: "/ajustes", label: t.nav.settings, icon: Settings },
 ];
