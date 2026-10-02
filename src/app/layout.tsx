@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: t.app.name,
   description: t.app.description,
   appleWebApp: { capable: true, title: t.app.name, statusBarStyle: "black-translucent" },
-  icons: { apple: "/icons/apple-touch-icon.png" },
+  icons: { icon: { url: "/icon.svg", type: "image/svg+xml" }, apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
