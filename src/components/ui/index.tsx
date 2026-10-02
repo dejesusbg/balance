@@ -143,12 +143,24 @@ export function Badge({ children }: { children: ReactNode }) {
   return <span className={styles.badge}>{children}</span>;
 }
 
-/** Minimal bar with a back chevron; big titles live in the page body. */
-export function TopBar({ title, onBack }: { title?: string; onBack?: () => void }) {
+/**
+ * Minimal bar with a back chevron; big titles live in the page body.
+ * Goes back in history, or to `fallback` when the page was opened directly.
+ */
+export function TopBar({
+  title,
+  onBack,
+  fallback = "/",
+}: {
+  title?: string;
+  onBack?: () => void;
+  fallback?: string;
+}) {
   const router = useRouter();
+  const back = () => (window.history.length > 1 ? router.back() : router.push(fallback));
   return (
     <div className={styles.topBar}>
-      <IconButton icon={ChevronLeft} iconSize={28} label={t.common.back} onClick={onBack ?? (() => router.back())} />
+      <IconButton icon={ChevronLeft} iconSize={28} label={t.common.back} onClick={onBack ?? back} />
       <div className={styles.topBarTitle}>{title}</div>
       <span />
     </div>

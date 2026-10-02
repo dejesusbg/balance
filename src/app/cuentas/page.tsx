@@ -55,7 +55,7 @@ export default function AccountsPage() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/ajustes" />
       <div className="page" style={{ paddingTop: 0 }}>
         <h1 className="page-title">{t.accounts.title}</h1>
       </div>

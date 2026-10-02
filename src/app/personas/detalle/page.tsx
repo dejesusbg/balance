@@ -52,7 +52,7 @@ function PersonDetail() {
   if (!person) {
     return (
       <>
-        <TopBar />
+        <TopBar fallback="/personas" />
         <p className="page muted">{t.people.notFound}</p>
       </>
     );
@@ -135,7 +135,7 @@ function PersonDetail() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/personas" />
       {/* Compact header: who, where you stand, and edit/archive in one row. */}
       <header className={styles.header}>
         <Avatar name={person.name} size={48} muted={person.archived} />

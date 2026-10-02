@@ -1,5 +1,5 @@
 .page {
-  padding: calc(var(--space-24) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-16);
+  padding: 0 var(--screen-gutter) var(--space-16);
 }
 
 .totals {

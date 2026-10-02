@@ -37,7 +37,7 @@ function AccountDetail() {
   if (!account) {
     return (
       <>
-        <TopBar />
+        <TopBar fallback="/cuentas" />
         <p className="page muted">{t.accounts.notFound}</p>
       </>
     );
@@ -58,7 +58,7 @@ function AccountDetail() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/cuentas" />
       <header className={styles.header}>
         <h1 className="page-title" style={{ margin: 0 }}>
           {account.name}

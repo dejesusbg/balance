@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAppData } from "@/components/AppData";
 import { PersonFormSheet } from "@/components/PersonForm";
-import { Button } from "@/components/ui";
+import { Button, TopBar } from "@/components/ui";
 import { Avatar } from "@/components/ui/Avatar";
 import { peopleWithBalances, type PersonRow } from "@/domain/people";
 import { t } from "@/i18n";
@@ -48,6 +48,7 @@ export default function PeoplePage() {
 
   return (
     <>
+      <TopBar fallback="/ajustes" />
       <div className={styles.page}>
         <h1 className="page-title">{t.people.title}</h1>
         <div className={styles.totals}>

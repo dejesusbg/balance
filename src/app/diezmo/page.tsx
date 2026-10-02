@@ -25,7 +25,7 @@ export default function TithingPage() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/ajustes" />
       <header className={styles.header}>
         <h1 className="page-title" style={{ margin: 0 }}>
           {t.tithing.title}

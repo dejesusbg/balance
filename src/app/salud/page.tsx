@@ -78,7 +78,7 @@ export default function HealthPage() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/reportes" />
       <div className={styles.page}>
         <h1 className="page-title">{t.health.title}</h1>
 

@@ -66,7 +66,7 @@ export default function ReasonsPage() {
 
   return (
     <>
-      <TopBar />
+      <TopBar fallback="/ajustes" />
       <div className="page" style={{ paddingTop: 0 }}>
         <h1 className="page-title">{t.reasons.title}</h1>
         <ChipGroup
