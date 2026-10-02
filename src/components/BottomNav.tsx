@@ -32,7 +32,6 @@ export function BottomNav() {
           >
             <Icon size={24} strokeWidth={1.75} aria-hidden />
             <span>{label}</span>
-            <span className={styles.dot} aria-hidden />
           </Link>
         );
       })}

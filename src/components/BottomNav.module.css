@@ -11,7 +11,6 @@
 }
 
 .item {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,19 +24,4 @@
 
 .item[aria-current="page"] {
   color: var(--text-brand);
-}
-
-/* Selected = small purple dot, as in the design system */
-.dot {
-  position: absolute;
-  top: 6px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--brand);
-  opacity: 0;
-}
-
-.item[aria-current="page"] .dot {
-  opacity: 1;
 }
