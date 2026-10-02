@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { Account, Movement, Person, Reason, Settings } from "@/domain/types";
+import { migrateV1toV2, type RawData } from "./migrations";
 import { buildBaseSeed } from "./seed";
 
 /**
@@ -29,28 +30,21 @@ export class BalanceDB extends Dexie {
     });
 
     // v2: "Añadir al diezmo" moves from the income reason to each income.
-    // Existing incomes keep what their reason said; the reason flag goes away.
     this.version(2)
       .stores({})
       .upgrade(async (tx) => {
-        const reasons = await tx.table("reasons").toArray();
-        const counted = new Set(reasons.filter((r) => r.countsForTithing).map((r) => r.id));
-        await tx
-          .table("movements")
-          .where("type")
-          .equals("income")
-          .modify((m) => {
-            if (m.reasonId && counted.has(m.reasonId)) m.tithe = true;
-          });
-        await tx.table("reasons").toCollection().modify((r) => {
-          delete r.countsForTithing;
-        });
-        await tx.table("settings").toCollection().modify((s) => {
-          delete s.tithingRate;
-        });
+        const tables = ["accounts", "people", "reasons", "movements", "settings"] as const;
+        const raw = Object.fromEntries(
+          await Promise.all(tables.map(async (n) => [n, await tx.table(n).toArray()])),
+        ) as RawData;
+        const next = migrateV1toV2(raw);
+        for (const n of ["reasons", "movements", "settings"] as const) {
+          await tx.table(n).clear();
+          await tx.table(n).bulkAdd(next[n]);
+        }
       });
 
-    // Next schema change: add this.version(3) with its own upgrade.
+    // Next schema change: add this.version(3) and a step in migrations.ts.
 
     // First run: seed accounts, people, reasons and settings.
     this.on("populate", async (tx) => {

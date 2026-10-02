@@ -343,6 +343,45 @@ export const es = {
     ],
     thresholds: "Umbrales (src/domain/healthRules.ts)",
   },
+  backup: {
+    title: "Copia de seguridad",
+    why: "Tus datos solo viven en este teléfono. Guarda una copia (en Drive, WhatsApp o donde quieras) para no perderlos si cambias o pierdes el teléfono.",
+    save: "Guardar copia",
+    csv: {
+      export: "Exportar movimientos (CSV)",
+      date: "Fecha",
+      side: "Lado",
+      what: "Qué pasó",
+      amount: "Monto",
+      account: "Cuenta",
+      toAccount: "Cuenta destino",
+      person: "Persona",
+      reason: "Motivo",
+      note: "Nota",
+      tithe: "Diezmo",
+      yes: "Sí",
+    },
+    import: "Restaurar desde una copia",
+    importConfirm: (date: string) =>
+      `Esto reemplaza TODOS los datos de este teléfono con la copia del ${date}. ¿Continuar?`,
+    imported: "Copia restaurada",
+    invalid: "Ese archivo no es una copia válida de Balance.",
+    newer: "Esa copia es de una versión más nueva de la app. Actualiza la app e inténtalo de nuevo.",
+    saved: "Copia guardada",
+    last: (when: string) => `Última copia: ${when}`,
+    never: "Aún no has guardado ninguna copia.",
+    reminder: (days: number | null) =>
+      days === null
+        ? "Aún no tienes copia de seguridad de tus datos."
+        : `Tu última copia de seguridad fue hace ${days} días.`,
+    later: "Más tarde",
+    storage: "Almacenamiento",
+    storagePersisted: "Protegido: el navegador no borrará tus datos para liberar espacio.",
+    storageNotPersisted:
+      "Sin protección: si el teléfono se queda sin espacio, el navegador podría borrar los datos. Instalar la app suele activarla.",
+    storageRequest: "Proteger almacenamiento",
+    storageUnknown: "Este navegador no informa si el almacenamiento está protegido.",
+  },
   settings: {
     title: "Ajustes",
     tithing: "Diezmo",
@@ -357,7 +396,9 @@ export const es = {
     themeSystem: "Sistema",
     themeLight: "Claro",
     themeDark: "Oscuro",
-    data: "Datos",
+    currency: "Moneda",
+    currencyHint: "Solo cambia el símbolo; los montos siguen siendo enteros.",
+    data: "Datos de prueba",
     loadSample: "Cargar datos de ejemplo",
     loadSampleHint:
       "Agrega ~6 meses de movimientos ficticios para probar la app. Reemplaza los movimientos actuales.",

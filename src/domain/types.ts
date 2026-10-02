@@ -108,6 +108,8 @@ export interface Settings {
   currency: CurrencyConfig;
   theme: "system" | "light" | "dark";
   lastExportAt: Timestamp | null;
+  /** "Más tarde" on the backup reminder hides it until this moment. */
+  backupSnoozedUntil?: Timestamp;
   /** Mask amounts on screen (privacy in public). */
   hideAmounts?: boolean;
   lastUsed: {

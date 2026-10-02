@@ -3,6 +3,7 @@
 import { ChevronRight, Eye, EyeOff, HandHeart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useAppData } from "@/components/AppData";
+import { BackupReminder } from "@/components/BackupReminder";
 import { MovementRow } from "@/components/MovementRow";
 import { useQuickAdd } from "@/components/quick-add/QuickAdd";
 import { IconButton } from "@/components/ui";
@@ -50,6 +51,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <BackupReminder />
 
       {(tithing.due > 0 || tithing.paid > 0) && (
         <Link href="/diezmo" className={styles.tithing}>

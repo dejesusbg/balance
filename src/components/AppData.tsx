@@ -7,6 +7,7 @@ import { DEFAULT_SETTINGS } from "@/db/seed";
 import { formatMoney } from "@/domain/money";
 import type { Account, ID, Movement, Person, Reason, Settings } from "@/domain/types";
 import { t } from "@/i18n";
+import { requestPersist } from "@/lib/storage";
 
 export interface AppData {
   accounts: Account[];
@@ -56,6 +57,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           : formatMoney(amount, settings.currency, opts),
     };
   }, [raw]);
+
+  // Once there's data worth keeping, ask the browser to protect it.
+  const hasData = Boolean(raw?.movements.length);
+  useEffect(() => {
+    if (hasData) requestPersist().catch(() => {});
+  }, [hasData]);
 
   const theme = raw?.settings.theme;
   useEffect(() => {
