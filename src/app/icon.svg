@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Balance app icon: money going out (top, →) and coming in (bottom, ←).
+       Artwork stays inside the maskable safe zone (radius 40% of the canvas). -->
+  <rect width="512" height="512" rx="112" fill="#820AD1"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="40">
+    <path d="M146 196 H360 M298 134 L360 196 L298 258" stroke="#FFFFFF"/>
+    <path d="M366 316 H152 M214 254 L152 316 L214 378" stroke="#C6A7F7"/>
+  </g>
+</svg>
