@@ -9,7 +9,6 @@ export const es = {
   nav: {
     home: "Inicio",
     movements: "Movimientos",
-    people: "Personas",
     reports: "Reportes",
     settings: "Ajustes",
   },
