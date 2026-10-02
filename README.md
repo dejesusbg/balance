@@ -1,118 +1,85 @@
 # Balance
 
-¿A dónde se va mi plata? PWA para registrar cada movimiento de dinero en el
-momento: ingresos, gastos, transferencias, préstamos con personas y pagos de
-deudas. Responde de dónde vino y a dónde fue el dinero, y por qué.
+Log every peso the moment it moves, and finally see where your money goes.
 
-- **Offline-first:** funciona sin internet una vez instalada.
-- **Local:** los datos viven solo en tu teléfono (IndexedDB). No hay servidor
-  ni cuentas de usuario. Por eso conviene guardar copias de seguridad (ver abajo).
-- **Saldos derivados:** ningún saldo se guarda; todo se calcula a partir de
-  los movimientos.
+My income comes and goes, my money is split between Nu, Nequi and cash, and some of it is lent to family. A list of balances told me *where* the money was, never where it came from, where it went, or why. Balance fixes that: every movement gets a reason, every balance is calculated from those movements, and it all fits in a few taps.
 
-## Correr en tu computador
+It's in Spanish and made for COP, because that's how I use it.
 
-Requisitos: Node.js 22 o superior.
+**→ [dejesusbg-balance.netlify.app](https://dejesusbg-balance.netlify.app/)**
+
+## Open it
+
+No account, no sign-up. Open the link and start logging.
+
+**Install it on Android (recommended)**
+
+1. Open [dejesusbg-balance.netlify.app](https://dejesusbg-balance.netlify.app/) in **Chrome**.
+2. Tap **⋮ → Instalar app** (or *Agregar a pantalla principal*).
+3. Open it from the new icon. It runs full screen and **works offline**.
+
+**On iPhone:** open it in Safari, tap **Share → Agregar a inicio**.
+
+Updates arrive on their own: the app downloads the new version in the background and uses it the next time you open it.
+
+**Just want to look around?** Go to **Ajustes → Datos de prueba → Cargar datos de ejemplo** for six months of fake movements, and **Borrar todo** when you're done.
+
+## How it works
+
+Tap **+** and answer two things: who benefits, and how much.
+
+| | You'd pick |
+|---|---|
+| **＋ Recibo** (you benefit) | Ingreso, Me prestaron, Me pagaron, Me perdonaron |
+| **− Doy** (someone else does) | Gasto, Presté, Pagué, Perdoné |
+| **⇄ Muevo** (your total doesn't change) | Transferencia, Ajuste |
+
+Then the details: account, person, reason, note. A regular expense is **+ → amount → reason → Guardar**.
+
+From there:
+
+- **Inicio** shows the money you have, per account, what people owe you and what you owe.
+- **Movimientos** lets you search notes and filter by side, account, person, reason and dates.
+- **Personas** keeps a running balance with each person, why you lent each amount, and how much is still pending. Debts can be paid with money, in kind (*mom bought me lunch*), or forgiven.
+- **Reportes** splits money in and out by reason for any period, plus a month-by-month chart.
+- **Salud financiera** says in plain words if you're doing well: spending pace, how long your money lasts, savings rate, old unpaid loans.
+- **Diezmo**: tick *Añadir al diezmo* on an income and 10% of it adds up as pending until you log it.
+
+## Your data
+
+Everything lives **only on your phone**, in the browser's storage. There's no server and nothing leaves the device.
+
+That also means that if you lose the phone or clear the browser's data, it's gone. So:
+
+- **Ajustes → Copia de seguridad → Guardar copia** creates a `.json` with everything. On Android it opens the share menu, so send it to Drive, WhatsApp or wherever.
+- **Restaurar desde una copia** brings it back on any phone.
+- Home reminds you every 7 days.
+
+## Run it yourself
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev     # http://localhost:3000
+npm test        # 117 tests for the money logic
+npm run build   # static site in out/, with the offline service worker
 ```
 
-**Desde el celular, en la misma red Wi-Fi:** abre `http://<IP-de-tu-computador>:3000`.
-Para ver la IP en macOS: `ipconfig getifaddr en0`. En modo desarrollo la app no
-se instala ni funciona offline; para eso necesita HTTPS (Netlify).
+It's a static export, so any static host works. Netlify reads `netlify.toml` and needs no setup.
 
-Otros comandos:
+<details>
+<summary>Under the hood</summary>
 
-```bash
-npm test           # tests de la lógica (ledger, reportes, diezmo, salud, copias…)
-npm run lint
-npm run build      # sitio estático en out/ + service worker (sw.js)
-npm start          # sirve out/ para probar la versión de producción
-```
-
-## Desplegar en Netlify (gratis)
-
-La app es un sitio 100% estático. La configuración ya está en `netlify.toml`.
-
-**Opción A: desde GitHub (recomendada, se actualiza sola en cada push)**
-1. Sube el repositorio a GitHub.
-2. En [app.netlify.com](https://app.netlify.com): **Add new site → Import an existing project → GitHub** y elige el repo.
-3. Netlify lee `netlify.toml`: build `npm run build`, carpeta `out`, Node 24. Dale a **Deploy**.
-4. Tendrás una URL como `https://tu-sitio.netlify.app`. Puedes cambiar el nombre en *Site configuration → Change site name*.
-
-**Opción B: arrastrar y soltar**
-1. `npm run build`
-2. Arrastra la carpeta `out/` a [app.netlify.com/drop](https://app.netlify.com/drop).
-
-> Si Netlify instala automáticamente el plugin de Next.js y el build falla,
-> ve a *Site configuration → Build & deploy → Plugins* y quítalo. La app es un
-> export estático y no lo necesita.
-
-## Instalar en Android
-
-1. Abre la URL de Netlify en **Chrome**.
-2. Menú ⋮ → **Instalar app** (o **Agregar a pantalla principal**).
-3. Ábrela desde el ícono: se ve a pantalla completa y funciona sin internet.
-
-Las actualizaciones llegan solas: cuando publicas una versión nueva, la app la
-descarga en segundo plano y la usa la próxima vez que la abras.
-
-## Copias de seguridad
-
-Tus datos solo existen en el teléfono. Si lo pierdes, lo cambias o borras los
-datos del navegador, se pierden.
-
-- **Ajustes → Copia de seguridad → Guardar copia** crea un archivo `.json` con
-  todo. En Android se abre el menú de compartir: elige **Drive** (o WhatsApp,
-  correo…). En computador se descarga.
-- **Restaurar desde una copia** reemplaza los datos del teléfono por los del
-  archivo. Funciona también con copias de versiones anteriores de la app: se
-  migran solas.
-- **Exportar movimientos (CSV)** sirve para abrirlos en Excel o Google Sheets.
-- Inicio te recuerda guardar una copia **cada 7 días**.
-- La app le pide al navegador **almacenamiento persistente**, para que no borre
-  los datos cuando falte espacio. El estado se ve en Ajustes.
-
-## Cómo está hecho
-
-- **Next.js 16** (App Router) con `output: "export"`: HTML estático, sin servidor.
-- **Dexie** sobre IndexedDB, con versiones de esquema y migraciones (`src/db/schema.ts`, `src/db/migrations.ts`).
-- **Workbox** genera el service worker después del build (`scripts/build-sw.mjs`).
-- **Vitest** para la lógica pura.
-- Diseño inspirado en un design system de Claude Design (ver `docs/design.md`).
+- **Next.js 16** with `output: "export"`, so it's plain HTML/JS and needs no server.
+- **Dexie** over IndexedDB, with schema versions and migrations (backups from older versions migrate too).
+- **Workbox** service worker generated after the build, so every screen works offline.
+- **Vitest** for the logic. Balances are never stored: they're derived from movements, and the tests check that every balance always equals the sum of its movements.
+- Visual design adapted from a design system made in Claude Design ([notes](./docs/design.md)), with dark mode and colors checked for color blindness.
 
 ```
-src/
-  domain/            lógica pura y testeada
-    ledger.ts          saldos de cuentas y personas
-    entry.ts           opciones de "Registrar" (Recibo / Doy / Muevo) → tipos guardados
-    people.ts          resumen por persona, deudas FIFO
-    reports.ts         reportes por motivo y mes a mes
-    tithing.ts         diezmo (10% de los ingresos marcados)
-    health.ts          métricas de salud financiera
-    healthRules.ts     umbrales y veredictos (edítalo para ajustar los semáforos)
-  db/                Dexie: esquema, migraciones, repositorio, copias, datos de ejemplo
-  components/        UI compartida (quick-add, filas, gráficas, sheets…)
-  app/               pantallas (Inicio, Movimientos, Personas, Reportes, Salud, Ajustes…)
-  i18n/es.ts         todos los textos (para traducir, copia este archivo)
-  theme/tokens.css   tokens de diseño (colores, tipografía, espaciado, modo oscuro)
+src/domain/   pure, tested logic: ledger, debts (FIFO), reports, tithing, health rules
+src/db/       schema, migrations, backups, sample data
+src/app/      screens
+src/i18n/     every UI string, in one file
 ```
 
-### Modelo de datos
-
-Todo es un **movimiento**. Lo que eliges al registrar se traduce a un tipo guardado:
-
-| Registrar | Se guarda como | Efecto |
-|---|---|---|
-| Recibo → Ingreso | `income` | cuenta + |
-| Recibo → Me prestaron | `borrow` | cuenta +, le debo más |
-| Recibo → Me pagaron (dinero / en especie) | `repayment` in / `settlement` in | cuenta + (o nada), me debe menos |
-| Recibo → Me perdonaron | `settlement` out + `forgiven` | le debo menos |
-| Doy → Gasto | `expense` | cuenta − |
-| Doy → Presté | `lend` | cuenta −, me debe más |
-| Doy → Pagué (dinero / en especie) | `repayment` out / `settlement` out | cuenta − (o nada), le debo menos |
-| Doy → Perdoné | `settlement` in + `forgiven` | me debe menos |
-| Muevo → Transferencia | `transfer` (+ gasto de comisión opcional) | entre cuentas |
-| Muevo → Ajuste | `adjustment` | corrige una cuenta al saldo real |
+</details>
