@@ -4,7 +4,7 @@
   align-items: center;
   gap: var(--space-12);
   min-height: 56px;
-  padding: 0 var(--space-8) 0 var(--space-20);
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-20);
   border-radius: var(--radius-lg);
   background: var(--brand-tint);
   color: var(--text-brand);

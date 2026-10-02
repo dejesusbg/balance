@@ -57,11 +57,11 @@ export function describeMovement(m: Movement, data: AppData) {
       // Old settlements may still carry a reason; it's ignored.
       const { option, method } = entryOf(m);
       title = t.entryOption[option];
+      // With people, who matters more than which account (shown when opened).
       context = [
         person,
         method === "goods" ? t.rowTag.goods : undefined,
         m.priorDebt ? t.movements.priorDebt : undefined,
-        account,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -71,7 +71,7 @@ export function describeMovement(m: Movement, data: AppData) {
     case "borrow": {
       const label = t.entryOption[entryOf(m).option];
       title = reason ?? label;
-      context = [reason ? label : undefined, person, account].filter(Boolean).join(" · ");
+      context = [reason ? label : undefined, person].filter(Boolean).join(" · ");
       break;
     }
     default:
@@ -99,7 +99,7 @@ export function MovementRow({
   data: AppData;
   onClick?: () => void;
   showTime?: boolean;
-  /** Running balance shown under the amount (account/person history). */
+  /** Shown under the amount instead of the time (e.g. running balance). */
   balanceAfter?: string;
   /** Effect on one account/person; overrides the global in/out reading. */
   delta?: number;
@@ -112,9 +112,13 @@ export function MovementRow({
   const flow = delta === undefined ? described.flow : delta > 0 ? "in" : delta < 0 ? "out" : "neutral";
   const shown = delta ?? described.shown;
   const tone = neutralTone ? "neutral" : flow;
-  const subtitle = [context, m.note, showTime ? formatTime(m.date) : undefined]
-    .filter(Boolean)
-    .join(" · ");
+  // A note is the most specific thing the user wrote ("Agua"), so it leads;
+  // the reason/kind moves to the subtitle. Time sits under the amount, which
+  // keeps every row two lines tall with the subtitle short enough to fit.
+  const note = m.note.trim();
+  const heading = note || title;
+  const subtitle = [note ? title : undefined, context].filter(Boolean).join(" · ");
+  const side = balanceAfter ?? (showTime ? formatTime(m.date) : undefined);
 
   return (
     <button type="button" className={styles.row} onClick={onClick}>
@@ -122,14 +126,14 @@ export function MovementRow({
         <Icon size={22} strokeWidth={1.75} />
       </span>
       <span className={styles.text}>
-        <span className={styles.title}>{title}</span>
+        <span className={styles.title}>{heading}</span>
         {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
       </span>
       <span className={styles.amountCol}>
         <span className={`money ${styles.amount} money-${tone}`}>
           {data.fmt(shown, { signed: delta !== undefined ? shown > 0 : flow === "in" })}
         </span>
-        {balanceAfter && <span className={`money ${styles.after}`}>{balanceAfter}</span>}
+        {side && <span className={`money ${styles.after}`}>{side}</span>}
       </span>
     </button>
   );

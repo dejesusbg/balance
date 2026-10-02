@@ -76,7 +76,7 @@
   gap: var(--space-16);
   min-height: 64px;
   margin-bottom: var(--space-16);
-  padding: 0 var(--space-20);
+  padding: var(--space-12) var(--space-20);
   border-radius: var(--radius-lg);
   background: var(--fill-neutral);
   color: var(--text-primary);
