@@ -7,6 +7,7 @@ import { useAppData } from "@/components/AppData";
 import { MonthlyChart } from "@/components/charts/MonthlyChart";
 import { ReasonBars } from "@/components/charts/ReasonBars";
 import { ChipGroup, Field, inputClass } from "@/components/ui";
+import { Segmented } from "@/components/ui/Segmented";
 import {
   buildReport,
   monthlyTotals,
@@ -19,11 +20,14 @@ import { fromDateInput, toDateInput } from "@/lib/dates";
 import styles from "./reportes.module.css";
 
 const PRESETS: PeriodPreset[] = ["thisMonth", "lastMonth", "last3", "custom"];
+const TABS = ["out", "in", "loans", "monthly"] as const;
+type Tab = (typeof TABS)[number];
 
 export default function ReportsPage() {
   const data = useAppData();
   const [now] = useState(() => Date.now());
   const [preset, setPreset] = useState<PeriodPreset>("thisMonth");
+  const [tab, setTab] = useState<Tab>("out");
   const [custom, setCustom] = useState<Period>(() => presetPeriod("last3", now));
 
   const period = preset === "custom" ? custom : presetPeriod(preset, now);
@@ -94,33 +98,52 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <ReasonBars title={t.reports.expenseByReason} breakdown={report.expense} series="out" period={period} data={data} />
-      <ReasonBars title={t.reports.incomeByReason} breakdown={report.income} series="in" period={period} data={data} />
-      <ReasonBars title={t.reports.lentByReason} breakdown={report.lent} series="neutral" period={period} data={data} />
-      {report.borrowed.total > 0 && (
-        <ReasonBars
-          title={t.reports.borrowedByReason}
-          breakdown={report.borrowed}
-          series="neutral"
-          period={period}
-          data={data}
+      <div className={styles.tabs}>
+        <Segmented
+          label={t.reports.title}
+          size="sm"
+          options={TABS.map((v) => ({ value: v, label: t.reports.tabs[v] }))}
+          value={tab}
+          onChange={setTab}
         />
+      </div>
+
+      {tab === "out" && (
+        <ReasonBars title={t.reports.expenseByReason} breakdown={report.expense} series="out" period={period} data={data} />
       )}
-      {report.forgivenByMe > 0 && (
-        <section className={styles.forgiven}>
-          <div>
-            <h2 className="section-title">{t.reports.forgiven}</h2>
-            <p className="muted">{t.reports.forgivenHint}</p>
-          </div>
-          <strong className="money">{data.fmt(report.forgivenByMe)}</strong>
+      {tab === "in" && (
+        <ReasonBars title={t.reports.incomeByReason} breakdown={report.income} series="in" period={period} data={data} />
+      )}
+      {tab === "loans" && (
+        <>
+          <ReasonBars title={t.reports.lentByReason} breakdown={report.lent} series="neutral" period={period} data={data} />
+          {report.borrowed.total > 0 && (
+            <ReasonBars
+              title={t.reports.borrowedByReason}
+              breakdown={report.borrowed}
+              series="neutral"
+              period={period}
+              data={data}
+            />
+          )}
+          {report.forgivenByMe > 0 && (
+            <section className={styles.forgiven}>
+              <div>
+                <h2 className="section-title">{t.reports.forgiven}</h2>
+                <p className="muted">{t.reports.forgivenHint}</p>
+              </div>
+              <strong className="money">{data.fmt(report.forgivenByMe)}</strong>
+            </section>
+          )}
+        </>
+      )}
+      {tab === "monthly" && (
+        <section className={styles.monthly}>
+          <h2 className="section-title">{t.reports.monthly}</h2>
+          <p className="muted">{t.reports.monthlyHint}</p>
+          <MonthlyChart data={monthly} fmt={(n) => data.fmt(n)} />
         </section>
       )}
-
-      <section className={styles.monthly}>
-        <h2 className="section-title">{t.reports.monthly}</h2>
-        <p className="muted">{t.reports.monthlyHint}</p>
-        <MonthlyChart data={monthly} fmt={(n) => data.fmt(n)} />
-      </section>
     </>
   );
 }

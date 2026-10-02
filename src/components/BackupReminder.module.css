@@ -1,24 +1,22 @@
+/* One-line reminder tile (brand tint so it stands apart from grey tiles). */
 .banner {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
-  gap: var(--space-8) var(--space-12);
-  margin: var(--space-16) var(--screen-gutter) 0;
-  padding: var(--space-12) var(--space-16);
-  border-radius: var(--radius-md);
+  gap: var(--space-12);
+  min-height: 56px;
+  padding: 0 var(--space-8) 0 var(--space-20);
+  border-radius: var(--radius-lg);
   background: var(--brand-tint);
   color: var(--text-brand);
 }
 
 .banner p {
+  flex: 1;
   margin: 0;
   color: var(--text-primary);
   font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
 }
 
-.actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-8);
+.banner button:last-child {
+  color: var(--text-secondary);
 }

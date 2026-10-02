@@ -26,3 +26,8 @@
   background: var(--brand);
   color: var(--text-on-brand);
 }
+
+.sm .segment {
+  height: 36px;
+  font-size: 13px;
+}

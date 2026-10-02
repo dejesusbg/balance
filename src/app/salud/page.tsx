@@ -4,7 +4,8 @@ import { AlertTriangle, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAppData, type AppData } from "@/components/AppData";
-import { TopBar } from "@/components/ui";
+import { Button, TopBar } from "@/components/ui";
+import { Segmented } from "@/components/ui/Segmented";
 import { Avatar } from "@/components/ui/Avatar";
 import { healthMetrics, type SpendSplit } from "@/domain/health";
 import { THRESHOLDS, verdicts, type Level, type Verdict } from "@/domain/healthRules";
@@ -44,9 +45,15 @@ function verdictText(v: Verdict, fmt: AppData["fmt"]): string {
   }
 }
 
+const TABS = ["income", "spending", "loans"] as const;
+/** Worst verdicts first; the rest behind "Ver más". */
+const VERDICTS_SHOWN = 3;
+
 export default function HealthPage() {
   const data = useAppData();
   const [now] = useState(() => Date.now());
+  const [tab, setTab] = useState<(typeof TABS)[number]>("income");
+  const [showAll, setShowAll] = useState(false);
   const h = useMemo(
     () =>
       data
@@ -78,61 +85,79 @@ export default function HealthPage() {
         {h.months.length === 0 && <p className={styles.note}>{t.health.notEnough}</p>}
 
         <ul className={styles.verdicts}>
-          {vs.map((v) => {
+          {(showAll ? vs : vs.slice(0, VERDICTS_SHOWN)).map((v) => {
             const Icon = LEVEL_ICON[v.level];
             return (
               <li key={v.id} className={`${styles.verdict} ${styles[v.level]}`}>
                 <span className={styles.badge} aria-hidden>
                   <Icon size={16} strokeWidth={2.5} />
                 </span>
-                <div>
-                  <span className={styles.levelLabel}>{t.health.level[v.level as Level]}</span>
-                  <p>{verdictText(v, fmt)}</p>
-                </div>
+                <p>
+                  <span className="visually-hidden">{t.health.level[v.level as Level]}: </span>
+                  {verdictText(v, fmt)}
+                </p>
               </li>
             );
           })}
         </ul>
+        {vs.length > VERDICTS_SHOWN && (
+          <Button variant="link" size="sm" onClick={() => setShowAll(!showAll)}>
+            {showAll ? t.health.showLess : t.health.showMore(vs.length - VERDICTS_SHOWN)}
+          </Button>
+        )}
       </div>
 
-      <section className={styles.section}>
-        <h2 className="section-title">{t.health.thisMonth}</h2>
-        <p className={styles.hint}>{t.health.dayOf(h.month.daysElapsed, h.month.daysInMonth)}</p>
-        <dl className={styles.lines}>
-          <div><dt>{t.health.spentSoFar}</dt><dd className="money">{fmt(h.month.expense)}</dd></div>
-          <div><dt>{t.health.projected}</dt><dd className="money">{fmt(h.month.projectedExpense)}</dd></div>
-          <div><dt>{t.health.incomeSoFar}</dt><dd className="money">{fmt(h.month.income)}</dd></div>
-          <div className={styles.total}>
-            <dt>{t.health.projectedNet}</dt>
-            <dd className={`money ${h.month.projectedNet > 0 ? "money-in" : ""}`}>
-              {fmt(h.month.projectedNet, { signed: h.month.projectedNet > 0 })}
-            </dd>
-          </div>
-          <div>
-            <dt>{t.health.savingsRate}</dt>
-            <dd>
-              {pct(h.savingsRateMonth)}
-              <span className={styles.muted}> · {t.health.savingsAvg} {pct(h.savingsRateAvg)}</span>
-            </dd>
-          </div>
-        </dl>
-      </section>
+      {/* Key numbers at a glance: 2×2 tiles instead of long lists. */}
+      <div className={styles.kpis}>
+        <div className={styles.kpi}>
+          <span>{t.health.projectedNet}</span>
+          {/* A projection from only a few days is noise; wait like the pace rule. */}
+          {h.month.daysElapsed >= THRESHOLDS.spendPaceMinDays ? (
+            <>
+              <strong className={`money ${h.month.projectedNet > 0 ? "money-in" : ""}`}>
+                {fmt(h.month.projectedNet, { signed: h.month.projectedNet > 0 })}
+              </strong>
+              <small>{t.health.projectedShort(fmt(h.month.projectedExpense))}</small>
+            </>
+          ) : (
+            <>
+              <strong>—</strong>
+              <small>{t.health.projectionFrom(THRESHOLDS.spendPaceMinDays)}</small>
+            </>
+          )}
+        </div>
+        <div className={styles.kpi}>
+          <span>{t.health.savingsRate}</span>
+          <strong>{pct(h.savingsRateMonth)}</strong>
+          <small>
+            {t.health.savingsAvg} {pct(h.savingsRateAvg)}
+          </small>
+        </div>
+        <div className={styles.kpi}>
+          <span>{t.health.runway}</span>
+          <strong>{h.runwayMonths === null ? "—" : t.health.runwayValue(decimal.format(h.runwayMonths))}</strong>
+          <small>{h.runwayMonths === null ? t.health.needMonth : t.health.runwayDays(Math.round(h.runwayMonths * 30.44))}</small>
+        </div>
+        <div className={styles.kpi}>
+          <span>{t.health.lent}</span>
+          <strong className="money">{fmt(h.owedToMe)}</strong>
+          <small>{t.health.lentShare(mine > 0 ? Math.round((h.owedToMe / mine) * 100) : 0)}</small>
+        </div>
+      </div>
 
-      <section className={styles.section}>
-        <h2 className="section-title">{t.health.runway}</h2>
-        {h.runwayMonths === null ? (
-          <p className={styles.hint}>{t.health.notEnough}</p>
-        ) : (
-          <>
-            <p className={`money ${styles.big}`}>{t.health.runwayValue(decimal.format(h.runwayMonths))}</p>
-            <p className={styles.hint}>{t.health.runwayDays(Math.round(h.runwayMonths * 30.44))}</p>
-          </>
-        )}
-      </section>
+      <div className={styles.tabs}>
+        <Segmented
+          label={t.health.title}
+          size="sm"
+          options={TABS.map((v) => ({ value: v, label: t.health.tabs[v] }))}
+          value={tab}
+          onChange={setTab}
+        />
+      </div>
 
-      {h.income && (
+      {tab === "income" && !h.income && <p className={`${styles.section} ${styles.hint}`}>{t.health.notEnough}</p>}
+      {tab === "income" && h.income && (
         <section className={styles.section}>
-          <h2 className="section-title">{t.health.income}</h2>
           <p className={styles.hint}>{t.health.incomeHint(h.months.length)}</p>
           <div className={styles.tiles}>
             <div><span>{t.health.avg}</span><strong className="money">{fmt(h.income.avg)}</strong></div>
@@ -153,9 +178,11 @@ export default function HealthPage() {
         </section>
       )}
 
-      {split && h.avgSpend !== null && (
+      {tab === "spending" && (!split || h.avgSpend === null) && (
+        <p className={`${styles.section} ${styles.hint}`}>{t.health.notEnough}</p>
+      )}
+      {tab === "spending" && split && h.avgSpend !== null && (
         <section className={styles.section}>
-          <h2 className="section-title">{t.health.spending}</h2>
           <p className={styles.hint}>{t.health.spendingHint}</p>
           <p className={`money ${styles.big}`}>{fmt(h.avgSpend)}</p>
           {splitTotal > 0 && (
@@ -183,8 +210,8 @@ export default function HealthPage() {
         </section>
       )}
 
+      {tab === "loans" && (
       <section className={styles.section}>
-        <h2 className="section-title">{t.health.loans}</h2>
         {mine > 0 && (
           <>
             <div className={styles.stack} aria-hidden>
@@ -228,6 +255,8 @@ export default function HealthPage() {
           </ul>
         )}
       </section>
+
+      )}
 
       <details className={styles.rules}>
         <summary>{t.health.rules}</summary>

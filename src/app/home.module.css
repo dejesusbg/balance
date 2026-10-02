@@ -1,14 +1,14 @@
 .hero {
   background: var(--surface-hero);
   color: var(--text-on-brand);
-  padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-24);
+  padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-20);
 }
 
 .heroTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 calc(-1 * var(--space-12)) var(--space-16) 0;
+  margin: 0 calc(-1 * var(--space-12)) var(--space-8) 0;
 }
 
 .brand {
@@ -27,35 +27,73 @@
   margin-top: var(--space-4);
 }
 
+/* Horizontally scrolling hero cards that bleed off the right edge. */
 .heroCards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: var(--space-8);
-  margin-top: var(--space-24);
+  margin: var(--space-20) calc(-1 * var(--screen-gutter)) 0;
+  padding: 0 var(--screen-gutter);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--screen-gutter);
+  scrollbar-width: none;
+}
+
+.heroCards::-webkit-scrollbar {
+  display: none;
 }
 
 .heroCard {
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-16);
+  justify-content: space-between;
+  gap: var(--space-8);
+  width: 136px;
+  min-height: 80px;
+  padding: var(--space-12) var(--space-16);
   border-radius: var(--radius-md);
   background: var(--surface-hero-card);
   color: var(--text-on-brand);
   text-decoration: none;
+  scroll-snap-align: start;
   font: var(--fw-medium) var(--fs-body-sm) / var(--lh-body-sm) var(--font-sans);
 }
 
 .heroCard strong {
   font: var(--fw-semibold) var(--fs-body-lg) / var(--lh-body-lg) var(--font-sans);
+  overflow-wrap: anywhere;
+}
+
+/* Debts read as secondary to the money you hold. */
+.heroCardSoft {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.heroCardMore {
+  width: 104px;
+  justify-content: center;
+  align-items: flex-start;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.3);
+}
+
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16) var(--screen-gutter) 0;
+}
+
+.tiles:empty {
+  display: none;
 }
 
 /* Grey tile row (design system TileButton) */
-.tithing {
+.tile {
   display: flex;
   align-items: center;
   gap: var(--space-16);
-  margin: var(--space-16) var(--screen-gutter) 0;
   min-height: 56px;
   padding: 0 var(--space-20);
   border-radius: var(--radius-lg);
@@ -65,94 +103,35 @@
   font: var(--fw-medium) var(--fs-body) / var(--lh-body) var(--font-sans);
 }
 
-.tithing:active {
+.tile:active {
   background: var(--fill-neutral-pressed);
 }
 
-.tithing span {
+.tile span {
   flex: 1;
 }
 
-.tithing strong {
+.tile strong {
   font-weight: var(--fw-semibold);
 }
 
-.tithing svg:last-child {
+.tile svg:last-child {
   color: var(--text-secondary);
 }
 
-.section {
-  padding: var(--section-pad-y) 0 var(--space-8);
-  border-bottom: var(--border-card) solid var(--divider);
+.latest {
+  padding: var(--space-20) 0 0;
 }
 
 .sectionHead {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--screen-gutter) var(--space-8);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.sectionHead svg {
-  color: var(--text-secondary);
-}
-
-.sectionHeadPlain {
-  display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 0 var(--screen-gutter) var(--space-8);
+  padding: 0 var(--screen-gutter) var(--space-4);
 }
 
-.sectionHeadPlain a {
+.sectionHead a {
   font-weight: var(--fw-medium);
-}
-
-.accounts {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.account {
-  display: flex;
-  align-items: center;
-  gap: var(--space-16);
-  padding: var(--space-12) var(--screen-gutter);
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: background var(--dur-fast);
-}
-
-.account:active {
-  background: var(--surface-sunken);
-}
-
-.accountIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size-avatar);
-  height: var(--size-avatar);
-  border-radius: 50%;
-  background: var(--brand-tint);
-  color: var(--text-brand);
-  flex: none;
-}
-
-.accountName {
-  flex: 1;
-  font: var(--fw-medium) 17px/22px var(--font-sans);
-}
-
-.accountBalance {
-  font: var(--fw-semibold) 17px/22px var(--font-sans);
-}
-
-.latest {
-  padding: var(--section-pad-y) 0 0;
 }
 
 .empty {

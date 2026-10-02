@@ -25,7 +25,7 @@ export function Sheet({
   children: ReactNode;
   footer?: ReactNode;
   tall?: boolean;
-  /** Children manage their own scrolling and padding. */
+  /** Children manage their own scrolling, padding and header. */
   bare?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -53,10 +53,12 @@ export function Sheet({
       {open && (
         <div className={styles.inner}>
           <div className={styles.handle} aria-hidden />
-          <header className={styles.header}>
-            <h2 className={styles.title}>{title}</h2>
-            <IconButton icon={X} label={t.quickAdd.close} onClick={onClose} size={40} />
-          </header>
+          {!bare && (
+            <header className={styles.header}>
+              <h2 className={styles.title}>{title}</h2>
+              <IconButton icon={X} label={t.quickAdd.close} onClick={onClose} size={40} />
+            </header>
+          )}
           <div className={bare ? styles.bodyBare : styles.body}>{children}</div>
           {footer && <div className={styles.footer}>{footer}</div>}
         </div>

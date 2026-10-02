@@ -18,7 +18,8 @@ import { useFeedback } from "@/components/Feedback";
 import { MovementRow } from "@/components/MovementRow";
 import { PersonFormSheet } from "@/components/PersonForm";
 import { useQuickAdd } from "@/components/quick-add/QuickAdd";
-import { Button, TopBar } from "@/components/ui";
+import { IconButton, TopBar } from "@/components/ui";
+import { Segmented } from "@/components/ui/Segmented";
 import { ActionCircle, ActionRow } from "@/components/ui/ActionCircle";
 import { Avatar } from "@/components/ui/Avatar";
 import { updatePerson } from "@/db/repo";
@@ -44,6 +45,7 @@ function PersonDetail() {
   const { openNew, openEdit } = useQuickAdd();
   const { confirm } = useFeedback();
   const [editing, setEditing] = useState(false);
+  const [tab, setTab] = useState<"history" | "summary">("history");
   if (!data) return null;
 
   const person = id ? data.personById.get(id) : undefined;
@@ -134,17 +136,26 @@ function PersonDetail() {
   return (
     <>
       <TopBar />
+      {/* Compact header: who, where you stand, and edit/archive in one row. */}
       <header className={styles.header}>
-        <Avatar name={person.name} size={56} muted={person.archived} />
-        <h1 className="page-title" style={{ margin: "var(--space-12) 0 0" }}>
-          {person.name}
-        </h1>
-        <div className={styles.state}>{t.people.state(sign)}</div>
-        {sign !== 0 && (
-          <div className={`money ${styles.big} ${sign > 0 ? "money-in" : ""}`}>
-            {data.fmt(Math.abs(summary.balance))}
+        <Avatar name={person.name} size={48} muted={person.archived} />
+        <div className={styles.who}>
+          <h1 className={styles.name}>{person.name}</h1>
+          <div className={styles.state}>
+            {t.people.state(sign)}
+            {sign !== 0 && (
+              <strong className={`money ${sign > 0 ? "money-in" : ""}`}> {data.fmt(Math.abs(summary.balance))}</strong>
+            )}
           </div>
-        )}
+        </div>
+        <IconButton icon={Pencil} label={t.people.edit} onClick={() => setEditing(true)} size={40} iconSize={20} />
+        <IconButton
+          icon={person.archived ? ArchiveRestore : Archive}
+          label={person.archived ? t.people.unarchive : t.people.archive}
+          onClick={toggleArchive}
+          size={40}
+          iconSize={20}
+        />
       </header>
 
       {!person.archived && (
@@ -163,81 +174,74 @@ function PersonDetail() {
         </div>
       )}
 
-      {(lines.length > 0 || priorLines.length > 0) && (
-        <section className={styles.section}>
-          <h2 className="section-title">{t.people.summary.title}</h2>
-          <dl className={styles.summary}>
-            {lines.map((l) => (
-              <div key={l.label} className={styles.line}>
-                <dt>{l.label}</dt>
-                <dd className="money">{data.fmt(l.value, { signed: true })}</dd>
-              </div>
-            ))}
-            <div className={`${styles.line} ${styles.totalLine}`}>
-              <dt>{t.people.summary.balance}</dt>
-              <dd className="money">{stateText(summary.balance)}</dd>
-            </div>
-          </dl>
-          {priorLines.length > 0 && (
-            <div className={styles.prior}>
-              <dl className={styles.summary}>
-                {priorLines.map((l) => (
-                  <div key={l.label} className={styles.line}>
-                    <dt>{l.label}</dt>
-                    <dd className="money">{data.fmt(l.value)}</dd>
+      <div className={styles.tabs}>
+        <Segmented
+          label={person.name}
+          size="sm"
+          options={[
+            { value: "history" as const, label: t.people.history },
+            { value: "summary" as const, label: t.people.summary.title },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+      </div>
+
+      {tab === "summary" && (
+        <>
+          {lines.length > 0 && (
+            <section className={styles.section}>
+              <div className={styles.tiles}>
+                {lines.map((l) => (
+                  <div key={l.label} className={styles.tileStat}>
+                    <span>{l.label}</span>
+                    <strong className="money">{data.fmt(l.value, { signed: true })}</strong>
                   </div>
                 ))}
-              </dl>
-              <p>{t.people.summary.priorHint}</p>
-            </div>
+              </div>
+              {priorLines.length > 0 && (
+                <p className={styles.priorNote}>
+                  {priorLines.map((l) => `${l.label}: ${data.fmt(l.value)}`).join(" · ")}.{" "}
+                  {t.people.summary.priorHint}
+                </p>
+              )}
+            </section>
+          )}
+          {reasonBlock(t.people.lentByReason, summary.lentByReason)}
+          {reasonBlock(t.people.borrowedByReason, summary.borrowedByReason)}
+          {lines.length === 0 && <p className="page muted">{t.people.noHistory}</p>}
+        </>
+      )}
+
+      {tab === "history" && (
+        <section className={styles.historySection}>
+          {timeline.length === 0 && <p className="page muted">{t.people.noHistory}</p>}
+          {timeline.slice(0, HISTORY_LIMIT).map(({ movement, delta, balance }) => {
+            // Loans show what's still open; everything else the running balance.
+            const lot = lotById.get(movement.id);
+            const status = lot?.isLoan
+              ? t.people.lotState(lot.remaining ? data.fmt(lot.remaining) : null)
+              : stateText(balance);
+            return (
+              <MovementRow
+                key={movement.id}
+                movement={movement}
+                data={data}
+                delta={delta}
+                neutralTone
+                showTime={false}
+                balanceAfter={`${formatShortDate(movement.date)} · ${status}`}
+                onClick={() => openEdit(movement.id)}
+              />
+            );
+          })}
+          {summary.opening !== 0 && (
+            <p className={styles.openingNote}>
+              {t.people.summary.opening}: {stateText(summary.opening)}
+            </p>
           )}
         </section>
       )}
-
-      {reasonBlock(t.people.lentByReason, summary.lentByReason)}
-      {reasonBlock(t.people.borrowedByReason, summary.borrowedByReason)}
-
-      <section className={styles.historySection}>
-        <h2 className={`section-title ${styles.historyHead}`}>{t.people.history}</h2>
-        {timeline.length === 0 && <p className="page muted">{t.people.noHistory}</p>}
-        {timeline.slice(0, HISTORY_LIMIT).map(({ movement, delta, balance }) => {
-          // Loans show what's still open; everything else the running balance.
-          const lot = lotById.get(movement.id);
-          const status = lot?.isLoan
-            ? t.people.lotState(lot.remaining ? data.fmt(lot.remaining) : null)
-            : stateText(balance);
-          return (
-            <MovementRow
-              key={movement.id}
-              movement={movement}
-              data={data}
-              delta={delta}
-              neutralTone
-              showTime={false}
-              balanceAfter={`${formatShortDate(movement.date)} · ${status}`}
-              onClick={() => openEdit(movement.id)}
-            />
-          );
-        })}
-        {summary.opening !== 0 && (
-          <p className={styles.openingNote}>
-            {t.people.summary.opening}: {stateText(summary.opening)}
-          </p>
-        )}
-      </section>
-
-      <div className={`page ${styles.footer}`}>
-        <Button variant="secondary" icon={Pencil} onClick={() => setEditing(true)}>
-          {t.people.edit}
-        </Button>
-        <Button
-          variant="secondary"
-          icon={person.archived ? ArchiveRestore : Archive}
-          onClick={toggleArchive}
-        >
-          {person.archived ? t.people.unarchive : t.people.archive}
-        </Button>
-      </div>
 
       <PersonFormSheet open={editing} person={person} onClose={() => setEditing(false)} />
     </>

@@ -1,13 +1,13 @@
 "use client";
 
-import { CloudUpload } from "lucide-react";
+import { CloudUpload, X } from "lucide-react";
 import { useState } from "react";
 import { exportBackup } from "@/db/backup";
 import { updateSettings } from "@/db/repo";
 import { t } from "@/i18n";
 import { useAppData } from "./AppData";
 import { useFeedback } from "./Feedback";
-import { Button } from "./ui";
+import { Button, IconButton } from "./ui";
 import styles from "./BackupReminder.module.css";
 
 const DAY = 86_400_000;
@@ -29,24 +29,22 @@ export function BackupReminder() {
   return (
     <div className={styles.banner} role="status">
       <CloudUpload size={22} strokeWidth={1.75} aria-hidden />
-      <p>{t.backup.reminder(days)}</p>
-      <div className={styles.actions}>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => updateSettings({ backupSnoozedUntil: Date.now() + DAY })}
-        >
-          {t.backup.later}
-        </Button>
-        <Button
-          size="sm"
-          onClick={async () => {
-            if (await exportBackup()) toast(t.backup.saved);
-          }}
-        >
-          {t.backup.save}
-        </Button>
-      </div>
+      <p>{t.backup.reminderShort(days)}</p>
+      <Button
+        size="sm"
+        onClick={async () => {
+          if (await exportBackup()) toast(t.backup.saved);
+        }}
+      >
+        {t.backup.saveShort}
+      </Button>
+      <IconButton
+        icon={X}
+        label={t.backup.later}
+        size={32}
+        iconSize={18}
+        onClick={() => updateSettings({ backupSnoozedUntil: Date.now() + DAY })}
+      />
     </div>
   );
 }

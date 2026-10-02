@@ -1,5 +1,9 @@
 .page {
-  padding: calc(var(--space-24) + env(safe-area-inset-top)) var(--screen-gutter) var(--space-24);
+  padding: calc(var(--space-24) + env(safe-area-inset-top)) var(--screen-gutter) 0;
+}
+
+.tabs {
+  padding: var(--space-16) var(--screen-gutter) var(--space-4);
   border-bottom: var(--border-card) solid var(--divider);
 }
 
@@ -14,7 +18,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-8);
-  margin-top: var(--space-20);
+  margin-top: var(--space-16);
 }
 
 .tile {
@@ -70,8 +74,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-16);
-  min-height: 72px;
-  margin-bottom: var(--space-20);
+  min-height: 64px;
+  margin-bottom: var(--space-16);
   padding: 0 var(--space-20);
   border-radius: var(--radius-lg);
   background: var(--fill-neutral);

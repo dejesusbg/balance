@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, ChevronDown, ChevronUp, Minus, Plus, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ChevronLeft, Minus, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { deleteMovement, saveMovement, undo, ValidationFailed, type MovementInput } from "@/db/repo";
 import { accountBalanceAt, previewPersonBalance } from "@/domain/ledger";
@@ -22,7 +22,7 @@ import { t } from "@/i18n";
 import { fromLocalInput, toLocalInput } from "@/lib/dates";
 import { useAppData, type AppData } from "../AppData";
 import { useFeedback } from "../Feedback";
-import { Button, ChipGroup, Field, inputClass, Toggle } from "../ui";
+import { Button, ChipGroup, Field, IconButton, inputClass, Toggle } from "../ui";
 import { Keypad } from "../ui/Keypad";
 import { Segmented } from "../ui/Segmented";
 import styles from "./QuickAdd.module.css";
@@ -116,9 +116,9 @@ export function QuickAddForm({
   const [openedAt] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [more, setMore] = useState(
-    () => Boolean(s.note || (editId && s.date) || s.fee || preset?.date),
-  );
+  // Step 1: what happened + amount (keypad). Step 2: details (no keypad).
+  // Editing opens on the details; the amount is one tap away.
+  const [step, setStep] = useState<1 | 2>(editId ? 2 : 1);
 
   const set = (patch: Partial<FormState>) => {
     setError(null);
@@ -238,6 +238,57 @@ export function QuickAddForm({
   }
 
   const accountOptions = activeAccounts.map((a) => ({ value: a.id, label: a.name }));
+  const signed = !isAdjustment && s.amount > 0 && side !== "move" ? (side === "in" ? "+" : "−") : "";
+  const amountText = `${signed}${data.fmt(s.amount, { reveal: true })}`;
+  const canContinue = isAdjustment || s.amount > 0;
+  const title = editId ? t.quickAdd.titleEdit : t.quickAdd.titleNew;
+
+  if (step === 1) {
+    return (
+      <div className={styles.form}>
+        <header className={styles.header}>
+          <h2 className={styles.title}>{title}</h2>
+          <IconButton icon={X} label={t.quickAdd.close} onClick={onDone} size={40} />
+        </header>
+        <div className={styles.stepOne}>
+          <Segmented
+            label={t.side.label}
+            options={SIDES.map((v) => ({ value: v, label: t.side[v], icon: SIDE_ICON[v] }))}
+            value={side}
+            onChange={changeSide}
+          />
+          <ChipGroup
+            label={t.side[side]}
+            options={OPTIONS_BY_SIDE[side].map((o) => ({ value: o, label: t.entryOption[o] }))}
+            value={s.option}
+            onChange={changeOption}
+          />
+          <div className={styles.amountBlock}>
+            <div className={styles.amountLabel}>
+              {isAdjustment ? t.quickAdd.realBalance : t.quickAdd.amount}
+            </div>
+            <output
+              className={`${styles.amount} ${s.amount === 0 ? styles.amountZero : side === "in" ? "money-in" : ""}`}
+              aria-live="polite"
+            >
+              {amountText}
+            </output>
+          </div>
+        </div>
+        <div className={styles.keypadArea}>
+          <Keypad
+            onChange={(update) => {
+              setError(null);
+              setS((prev) => ({ ...prev, amount: update(prev.amount) }));
+            }}
+            onNext={() => setStep(2)}
+            nextDisabled={!canContinue}
+            nextLabel={t.quickAdd.next}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -247,41 +298,17 @@ export function QuickAddForm({
         save();
       }}
     >
+      <header className={styles.header}>
+        <IconButton icon={ChevronLeft} label={t.quickAdd.backToAmount} onClick={() => setStep(1)} size={40} />
+        {/* Tapping the summary also goes back to change the amount or option. */}
+        <button type="button" className={styles.summary} onClick={() => setStep(1)}>
+          <span>{t.entryOption[s.option]}</span>
+          <strong className={`money ${side === "in" ? "money-in" : ""}`}>{amountText}</strong>
+        </button>
+        <IconButton icon={X} label={t.quickAdd.close} onClick={onDone} size={40} />
+      </header>
+
       <div className={styles.scroll}>
-        <Segmented
-          label={t.side.label}
-          options={SIDES.map((v) => ({ value: v, label: t.side[v], icon: SIDE_ICON[v] }))}
-          value={side}
-          onChange={changeSide}
-        />
-        <ChipGroup
-          label={t.side[side]}
-          options={OPTIONS_BY_SIDE[side].map((o) => ({ value: o, label: t.entryOption[o] }))}
-          value={s.option}
-          onChange={changeOption}
-        />
-
-        <div className={styles.amountBlock}>
-          <div className={styles.amountLabel}>
-            {isAdjustment ? t.quickAdd.realBalance : t.quickAdd.amount}
-          </div>
-          <output
-            className={`${styles.amount} ${s.amount === 0 ? styles.amountZero : side === "in" ? "money-in" : ""}`}
-            aria-live="polite"
-          >
-            {/* ＋ for what benefits me, − for what benefits others. */}
-            {!isAdjustment && s.amount > 0 && side !== "move" ? (side === "in" ? "+" : "−") : ""}
-            {data.fmt(s.amount, { reveal: true })}
-          </output>
-          {adjustment && (
-            <div className={styles.hint}>
-              {t.quickAdd.currentBalance}: {data.fmt(adjustment.current, { reveal: true })} ·{" "}
-              {t.quickAdd.difference}:{" "}
-              <strong>{data.fmt(adjustment.delta, { signed: true, reveal: true })}</strong>
-            </div>
-          )}
-        </div>
-
         {needsPerson && (
           <Field label={t.quickAdd.person}>
             {activePeople.length ? (
@@ -327,6 +354,14 @@ export function QuickAddForm({
                 }
               />
           </Field>
+        )}
+
+        {adjustment && (
+          <div className={styles.hint}>
+            {t.quickAdd.currentBalance}: {data.fmt(adjustment.current, { reveal: true })} ·{" "}
+            {t.quickAdd.difference}:{" "}
+            <strong>{data.fmt(adjustment.delta, { signed: true, reveal: true })}</strong>
+          </div>
         )}
 
         {type === "transfer" && (
@@ -386,71 +421,50 @@ export function QuickAddForm({
           />
         )}
 
-        <Button
-          variant="link"
-          size="sm"
-          className={styles.moreToggle}
-          icon={more ? ChevronUp : ChevronDown}
-          onClick={() => setMore(!more)}
-          aria-expanded={more}
-        >
-          {t.quickAdd.more}
-        </Button>
-
-        {more && (
-          <>
-            <Field label={t.quickAdd.note} htmlFor="qa-note">
-              <input
-                id="qa-note"
-                className={inputClass}
-                value={s.note}
-                placeholder={t.quickAdd.notePlaceholder}
-                onChange={(e) => set({ note: e.target.value })}
-                maxLength={200}
-                enterKeyHint="done"
-              />
-            </Field>
-            <Field label={t.quickAdd.date} htmlFor="qa-date">
-              <input
-                id="qa-date"
-                type="datetime-local"
-                className={inputClass}
-                value={toLocalInput(s.date ?? openedAt)}
-                onChange={(e) => e.target.value && set({ date: fromLocalInput(e.target.value) })}
-              />
-            </Field>
-            {type === "transfer" && (
-              <Field label={`${t.quickAdd.fee} (${data.fmt(s.fee, { reveal: true })})`} htmlFor="qa-fee">
-                <input
-                  id="qa-fee"
-                  inputMode="numeric"
-                  className={inputClass}
-                  value={s.fee || ""}
-                  placeholder="0"
-                  onChange={(e) => set({ fee: Number(e.target.value.replace(/\D/g, "")) || 0 })}
-                  aria-describedby="qa-fee-hint"
-                />
-                <span id="qa-fee-hint" className={styles.empty}>
-                  {t.quickAdd.feeHint}
-                </span>
-              </Field>
-            )}
-            {editId && (
-              <Button variant="danger" size="md" icon={Trash2} onClick={remove}>
-                {t.quickAdd.delete}
-              </Button>
-            )}
-          </>
+        {type === "transfer" && (
+          <Field label={`${t.quickAdd.fee} (${data.fmt(s.fee, { reveal: true })})`} htmlFor="qa-fee">
+            <input
+              id="qa-fee"
+              inputMode="numeric"
+              className={inputClass}
+              value={s.fee || ""}
+              placeholder="0"
+              onChange={(e) => set({ fee: Number(e.target.value.replace(/\D/g, "")) || 0 })}
+              aria-describedby="qa-fee-hint"
+            />
+            <span id="qa-fee-hint" className={styles.empty}>
+              {t.quickAdd.feeHint}
+            </span>
+          </Field>
+        )}
+        <Field label={t.quickAdd.note} htmlFor="qa-note">
+          <input
+            id="qa-note"
+            className={inputClass}
+            value={s.note}
+            placeholder={t.quickAdd.notePlaceholder}
+            onChange={(e) => set({ note: e.target.value })}
+            maxLength={200}
+            enterKeyHint="done"
+          />
+        </Field>
+        <Field label={t.quickAdd.date} htmlFor="qa-date">
+          <input
+            id="qa-date"
+            type="datetime-local"
+            className={inputClass}
+            value={toLocalInput(s.date ?? openedAt)}
+            onChange={(e) => e.target.value && set({ date: fromLocalInput(e.target.value) })}
+          />
+        </Field>
+        {editId && (
+          <Button variant="danger" size="md" icon={Trash2} onClick={remove}>
+            {t.quickAdd.delete}
+          </Button>
         )}
       </div>
 
       <div className={styles.footer}>
-        <Keypad
-          onChange={(update) => {
-            setError(null);
-            setS((prev) => ({ ...prev, amount: update(prev.amount) }));
-          }}
-        />
         {error && (
           <p className={styles.error} role="alert">
             {error}
